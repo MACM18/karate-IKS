@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { HeroSection } from "@/components/HeroSection";
 import { FeatureCard } from "@/components/FeatureCard";
 import { Shield, Zap, UserCheck } from "lucide-react";
@@ -45,9 +46,14 @@ export default function Home() {
                         <p className="text-zinc-500 mb-8 max-w-xl mx-auto">
                             Your first class is complimentary. Come experience the tradition and energy of our school.
                         </p>
-                        <button className="px-12 py-4 bg-white text-black font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors">
-                            Get Free Class Pass
-                        </button>
+                        <div className="flex justify-center">
+                            <Link
+                                href="/login"
+                                className="inline-flex items-center gap-2 px-8 py-4 bg-white text-black font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+                            >
+                                Student Portal <Shield size={16} />
+                            </Link>
+                        </div>
                     </div>
                 </section>
             </main>
