@@ -1,11 +1,10 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 :root {
   --background: #0a0a0a;
   --foreground: #ffffff;
-  --action: #dc2626; /* Crimson Red */
+  --action: #dc2626;
+  /* Crimson Red */
 }
 
 @media (prefers-color-scheme: dark) {

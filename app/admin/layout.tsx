@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Users, LayoutDashboard, Award, Settings, LogOut } from "lucide-react";
+import { Users, LayoutDashboard, Award, Settings, LogOut, Calendar } from "lucide-react";
 
 export default function AdminLayout({
     children,
@@ -30,6 +30,16 @@ export default function AdminLayout({
                     >
                         <Users size={20} />
                         <span className="uppercase text-sm tracking-wide">Students</span>
+                    </Link>
+                    <Link
+                        href="/admin/attendance"
+                        className="flex items-center gap-3 px-4 py-3 text-zinc-400 hover:text-white hover:bg-zinc-900 rounded transition-colors"
+                    >
+                        <div className="relative">
+                            <span className="absolute -top-1 -right-1 w-2 h-2 bg-action rounded-full animate-pulse"></span>
+                            <Calendar size={20} />
+                        </div>
+                        <span className="uppercase text-sm tracking-wide">Attendance</span>
                     </Link>
                     <Link
                         href="/admin/promotions"
