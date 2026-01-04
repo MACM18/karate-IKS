@@ -1,28 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useActionState, useState } from "react";
+import { authenticate } from "@/app/lib/actions";
 import { User, Shield, ArrowRight, Lock } from "lucide-react";
 import Link from "next/link";
 
 export default function LoginPage() {
-    const router = useRouter();
+    const [errorMessage, dispatch] = useActionState(authenticate, undefined);
     const [role, setRole] = useState<"student" | "admin">("student");
-    const [isLoading, setIsLoading] = useState(false);
-
-    const handleLogin = (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsLoading(true);
-
-        // Simulate network delay
-        setTimeout(() => {
-            if (role === "admin") {
-                router.push("/admin/dashboard");
-            } else {
-                router.push("/student/dashboard");
-            }
-        }, 1000);
-    };
 
     return (
         <div className="min-h-screen bg-black text-white flex items-center justify-center p-4 relative overflow-hidden">
@@ -36,9 +21,10 @@ export default function LoginPage() {
                     <p className="text-zinc-500 text-sm">Enter the dojo.</p>
                 </div>
 
-                {/* Role Toggle */}
+                {/* Role Toggle Visual only */}
                 <div className="flex bg-zinc-900 p-1 rounded-lg mb-8">
                     <button
+                        type="button"
                         onClick={() => setRole("student")}
                         className={`flex-1 flex items-center justify-center gap-2 py-2 rounded text-sm font-bold uppercase tracking-widest transition-all
                 ${role === "student" ? "bg-zinc-800 text-white shadow-lg" : "text-zinc-500 hover:text-zinc-300"}`}
@@ -46,6 +32,7 @@ export default function LoginPage() {
                         <User size={16} /> Student
                     </button>
                     <button
+                        type="button"
                         onClick={() => setRole("admin")}
                         className={`flex-1 flex items-center justify-center gap-2 py-2 rounded text-sm font-bold uppercase tracking-widest transition-all
                 ${role === "admin" ? "bg-action text-white shadow-lg" : "text-zinc-500 hover:text-zinc-300"}`}
@@ -54,14 +41,16 @@ export default function LoginPage() {
                     </button>
                 </div>
 
-                <form onSubmit={handleLogin} className="space-y-4">
+                <form action={dispatch} className="space-y-4">
                     <div>
                         <label className="block text-xs uppercase font-bold tracking-widest text-zinc-500 mb-2">Email</label>
                         <div className="relative">
                             <User className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600" size={18} />
                             <input
+                                name="email"
                                 type="email"
                                 placeholder={role === "student" ? "student@example.com" : "sensei@karate-iks.com"}
+                                defaultValue={role === "student" ? "student@example.com" : "sensei@karate-iks.com"}
                                 className="w-full bg-black border border-zinc-800 rounded py-3 pl-10 pr-4 text-white focus:outline-none focus:border-zinc-600 transition-colors"
                                 required
                             />
@@ -73,31 +62,32 @@ export default function LoginPage() {
                         <div className="relative">
                             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600" size={18} />
                             <input
+                                name="password"
                                 type="password"
                                 placeholder="••••••••"
+                                defaultValue="123456"
                                 className="w-full bg-black border border-zinc-800 rounded py-3 pl-10 pr-4 text-white focus:outline-none focus:border-zinc-600 transition-colors"
                                 required
+                                minLength={6}
                             />
                         </div>
                     </div>
 
+                    <div className="py-2">
+                        {errorMessage && (
+                            <p className="text-red-500 text-sm">{errorMessage}</p>
+                        )}
+                    </div>
+
                     <button
                         type="submit"
-                        disabled={isLoading}
                         className={`w-full py-4 rounded font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all mt-6
                 ${role === "admin"
                                 ? "bg-action hover:bg-red-700 text-white shadow-[0_0_20px_rgba(220,38,38,0.3)]"
                                 : "bg-white hover:bg-zinc-200 text-black shadow-[0_0_20px_rgba(255,255,255,0.1)]"}
-                ${isLoading ? "opacity-70 cursor-not-allowed" : ""}
                 `}
                     >
-                        {isLoading ? (
-                            "Bowing in..."
-                        ) : (
-                            <>
-                                Enter Dojo <ArrowRight size={18} />
-                            </>
-                        )}
+                        Enter Dojo <ArrowRight size={18} />
                     </button>
                 </form>
 
