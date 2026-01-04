@@ -7,7 +7,7 @@ export default function AboutPage() {
                 <section className="text-center space-y-4">
                     <h1 className="text-5xl font-heading uppercase tracking-widest text-white">The Dojo Lineage</h1>
                     <p className="text-zinc-500 text-lg max-w-2xl mx-auto">
-                        Tracing our roots back to the traditional masters of Shotokan, we preserve the authenticity and spirit of the art.
+                        Tracing our roots back to the traditional masters of Shito-Ryu, we preserve the authenticity and spirit of the art under the Karate Do Shito-Ryu Shinbukan Association.
                     </p>
                 </section>
 

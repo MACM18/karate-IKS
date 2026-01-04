@@ -26,7 +26,7 @@ export function HeroSection() {
                 </h1>
 
                 <p className="text-xl md:text-2xl text-zinc-300 max-w-2xl mx-auto mb-10 font-light text-balance">
-                    Master the art of Shotokan Karate. Build strength, character, and confidence in a traditional dojo environment.
+                    Master the art of Shito-Ryu Karate. Build strength, character, and confidence in a traditional dojo environment.
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">

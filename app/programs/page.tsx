@@ -42,7 +42,7 @@ export default function ProgramsPage() {
                         <h2 className="text-2xl font-heading uppercase text-white mb-2">Juniors Program</h2>
                         <p className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-6">Ages 8 - 15</p>
                         <p className="text-zinc-400 mb-8 leading-relaxed">
-                            Building confidence and discipline. Students learn the full Shotokan curriculum, including Kata, Kumite, and self-defense applications.
+                            Building confidence and discipline. Students learn the full Shito-Ryu curriculum, including Kata, Kumite, and self-defense applications.
                         </p>
                         <Link href="/join" className="block text-center py-3 bg-action text-white border border-action uppercase text-sm font-bold tracking-widest hover:bg-red-700 transition-colors">
                             Start Training

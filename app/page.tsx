@@ -48,21 +48,17 @@ export default function Home() {
                         </p>
                         <div className="flex justify-center">
                             <Link
-                                href="/login"
+                                href="/join"
                                 className="inline-flex items-center gap-2 px-8 py-4 bg-white text-black font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
                             >
-                                Student Portal <Shield size={16} />
+                                Enter the Dojo <Shield size={16} />
                             </Link>
                         </div>
                     </div>
                 </section>
             </main>
 
-            <footer className="py-12 bg-black border-t border-zinc-900 text-center text-zinc-600">
-                <p className="text-sm uppercase tracking-widest">
-                    © 2026 International Karate School. All Rights Reserved.
-                </p>
-            </footer>
+
         </div>
     );
 }

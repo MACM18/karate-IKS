@@ -242,7 +242,7 @@ export function MultiStepForm() {
                             >
                                 <div>
                                     <h3 className={`font-heading uppercase text-lg ${formData.program === 'adults' ? 'text-white' : 'text-zinc-400 group-hover:text-white'}`}>Adults (16+)</h3>
-                                    <p className="text-sm text-zinc-500">Fitness, traditional Shotokan, and sparring.</p>
+                                    <p className="text-sm text-zinc-500">Fitness, traditional Shito-Ryu, and sparring.</p>
                                 </div>
                             </div>
                         </div>
