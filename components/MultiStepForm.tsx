@@ -6,12 +6,15 @@ import { ChevronRight, ChevronLeft, Check } from "lucide-react";
 export function MultiStepForm() {
     const [step, setStep] = useState(1);
     const totalSteps = 3;
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [formData, setFormData] = useState({
         firstName: "",
         lastName: "",
         email: "",
         phone: "",
+        emergencyContact: "",
+        dateOfBirth: "",
         experience: "beginner",
         goals: [],
         program: "adults",
@@ -25,9 +28,40 @@ export function MultiStepForm() {
         if (step > 1) setStep(step - 1);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        alert("Application Submitted! (Mock)");
+        setIsSubmitting(true);
+
+        try {
+            const payload = {
+                name: `${formData.firstName} ${formData.lastName}`.trim(),
+                email: formData.email,
+                phone: formData.phone,
+                emergencyContact: formData.emergencyContact,
+                dateOfBirth: formData.dateOfBirth ? new Date(formData.dateOfBirth).toISOString() : undefined,
+                rank: "White"
+            };
+
+            const response = await fetch('/api/students', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                alert("Application Submitted Successfully! Welcome to the Dojo.");
+                // Reset form or redirect
+                window.location.href = '/login';
+            } else {
+                const error = await response.json();
+                alert(`Error: ${error.error || "Submission failed"}`);
+            }
+        } catch (error) {
+            console.error(error);
+            alert("An error occurred.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -103,6 +137,27 @@ export function MultiStepForm() {
                                     placeholder="(555) 0199-342"
                                 />
                             </div>
+                            <div className="space-y-2">
+                                <label className="text-xs uppercase tracking-widest text-zinc-500">Date of Birth</label>
+                                <input
+                                    type="date"
+                                    name="dateOfBirth"
+                                    value={formData.dateOfBirth}
+                                    onChange={handleChange}
+                                    className="w-full bg-zinc-950 border border-zinc-800 p-3 rounded text-white focus:border-action focus:outline-none focus:ring-1 focus:ring-action transition-colors"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs uppercase tracking-widest text-zinc-500">Emergency Contact</label>
+                                <input
+                                    type="text"
+                                    name="emergencyContact"
+                                    value={formData.emergencyContact}
+                                    onChange={handleChange}
+                                    className="w-full bg-zinc-950 border border-zinc-800 p-3 rounded text-white focus:border-action focus:outline-none focus:ring-1 focus:ring-action transition-colors"
+                                    placeholder="Mr. Miyagi"
+                                />
+                            </div>
                         </div>
                     </div>
                 )}
@@ -120,8 +175,8 @@ export function MultiStepForm() {
                                         key={level}
                                         onClick={() => setFormData({ ...formData, experience: level.toLowerCase() })}
                                         className={`p-4 border rounded cursor-pointer transition-all ${formData.experience === level.toLowerCase()
-                                                ? 'border-action bg-action/10 text-white'
-                                                : 'border-zinc-800 bg-zinc-950 text-zinc-500 hover:border-zinc-600'
+                                            ? 'border-action bg-action/10 text-white'
+                                            : 'border-zinc-800 bg-zinc-950 text-zinc-500 hover:border-zinc-600'
                                             }`}
                                     >
                                         <span className="font-bold uppercase tracking-wide">{level}</span>
@@ -155,8 +210,8 @@ export function MultiStepForm() {
                             <div
                                 onClick={() => setFormData({ ...formData, program: 'kids' })}
                                 className={`p-6 border rounded cursor-pointer flex items-center justify-between group transition-all ${formData.program === 'kids'
-                                        ? 'border-action bg-action/10'
-                                        : 'border-zinc-800 bg-zinc-950 hover:border-zinc-600'
+                                    ? 'border-action bg-action/10'
+                                    : 'border-zinc-800 bg-zinc-950 hover:border-zinc-600'
                                     }`}
                             >
                                 <div>
@@ -168,8 +223,8 @@ export function MultiStepForm() {
                             <div
                                 onClick={() => setFormData({ ...formData, program: 'juniors' })}
                                 className={`p-6 border rounded cursor-pointer flex items-center justify-between group transition-all ${formData.program === 'juniors'
-                                        ? 'border-action bg-action/10'
-                                        : 'border-zinc-800 bg-zinc-950 hover:border-zinc-600'
+                                    ? 'border-action bg-action/10'
+                                    : 'border-zinc-800 bg-zinc-950 hover:border-zinc-600'
                                     }`}
                             >
                                 <div>
@@ -181,8 +236,8 @@ export function MultiStepForm() {
                             <div
                                 onClick={() => setFormData({ ...formData, program: 'adults' })}
                                 className={`p-6 border rounded cursor-pointer flex items-center justify-between group transition-all ${formData.program === 'adults'
-                                        ? 'border-action bg-action/10'
-                                        : 'border-zinc-800 bg-zinc-950 hover:border-zinc-600'
+                                    ? 'border-action bg-action/10'
+                                    : 'border-zinc-800 bg-zinc-950 hover:border-zinc-600'
                                     }`}
                             >
                                 <div>
@@ -217,9 +272,10 @@ export function MultiStepForm() {
                     ) : (
                         <button
                             type="submit"
-                            className="flex items-center gap-2 px-8 py-3 bg-action text-white font-bold uppercase tracking-widest hover:bg-red-700 transition-colors rounded-sm shadow-[0_0_20px_rgba(220,38,38,0.5)]"
+                            disabled={isSubmitting}
+                            className="flex items-center gap-2 px-8 py-3 bg-action text-white font-bold uppercase tracking-widest hover:bg-red-700 transition-colors rounded-sm shadow-[0_0_20px_rgba(220,38,38,0.5)] disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            Submit Application <Check size={16} />
+                            {isSubmitting ? "Submitting..." : "Submit Application"} <Check size={16} />
                         </button>
                     )}
                 </div>

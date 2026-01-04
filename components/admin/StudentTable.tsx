@@ -3,7 +3,7 @@
 import React from "react";
 import { MoreHorizontal } from "lucide-react";
 
-interface Student {
+export interface Student {
     id: string;
     name: string;
     email: string;
@@ -13,14 +13,11 @@ interface Student {
     lastAttendance: string;
 }
 
-const mockStudents: Student[] = [
-    { id: "1", name: "Daniel LaRusso", email: "daniel@miyagi.do", rank: "Yellow Belt", joinDate: "2025-01-15", status: "active", lastAttendance: "2 days ago" },
-    { id: "2", name: "Johnny Lawrence", email: "johnny@cobra.kai", rank: "Black Belt", joinDate: "2024-03-10", status: "active", lastAttendance: "Yesterday" },
-    { id: "3", name: "Samantha LaRusso", email: "sam@miyagi.do", rank: "Orange Belt", joinDate: "2025-05-20", status: "active", lastAttendance: "1 week ago" },
-    { id: "4", name: "Miguel Diaz", email: "miguel@eagle.fang", rank: "Purple Belt", joinDate: "2024-11-01", status: "suspended", lastAttendance: "3 months ago" },
-];
+interface StudentTableProps {
+    students: Student[];
+}
 
-export function StudentTable() {
+export function StudentTable({ students }: StudentTableProps) {
     return (
         <div className="w-full overflow-x-auto">
             <table className="w-full text-left border-collapse">
@@ -34,7 +31,7 @@ export function StudentTable() {
                     </tr>
                 </thead>
                 <tbody className="text-zinc-300">
-                    {mockStudents.map((student) => (
+                    {students.map((student) => (
                         <tr key={student.id} className="border-b border-zinc-900 hover:bg-zinc-900/50 transition-colors group">
                             <td className="py-4 px-6">
                                 <div className="font-bold text-white">{student.name}</div>
@@ -52,7 +49,7 @@ export function StudentTable() {
                                 ${student.status === 'inactive' ? 'bg-zinc-800 text-zinc-400 border border-zinc-700' : ''}
                             `}>
                                     <span className={`w-1.5 h-1.5 rounded-full ${student.status === 'active' ? 'bg-green-400' :
-                                            student.status === 'suspended' ? 'bg-red-400' : 'bg-zinc-400'
+                                        student.status === 'suspended' ? 'bg-red-400' : 'bg-zinc-400'
                                         }`}></span>
                                     {student.status}
                                 </span>

@@ -1,15 +1,37 @@
 import { BeltProgress } from "@/components/BeltProgress";
 import { User, Calendar, BookOpen, Trophy } from "lucide-react";
 
-export default function StudentDashboard() {
-    // Mock Data
+import { auth } from "@/auth";
+import { prisma } from "@/app/lib/prisma";
+import { redirect } from "next/navigation";
+
+export default async function StudentDashboard() {
+    const session = await auth();
+    if (!session || !session.user) {
+        redirect("/login");
+    }
+
+    const profile = await prisma.studentProfile.findUnique({
+        where: { userId: session.user.id },
+        include: { currentRank: true }
+    });
+
+    // If no profile (e.g. admin or corrupted data), handle gracefully or redirect
+    if (!profile) {
+        // Fallback or error page
+    }
+
+    const allRanks = await prisma.rank.findMany({ orderBy: { order: 'asc' } });
+    const currentRankOrder = profile?.currentRank?.order || 0;
+    const nextRank = allRanks.find(r => r.order > currentRankOrder);
+
     const student = {
-        name: "Daniel LaRusso",
-        currentBelt: "Yellow Belt",
-        nextBelt: "Orange Belt",
-        beltColor: "#FACC15", // Yellow-400
-        progress: 65,
-        streak: 12,
+        name: session.user.name || "Student",
+        currentBelt: profile?.currentRank?.name || "White",
+        nextBelt: nextRank?.name || "Black Belt Master",
+        beltColor: profile?.currentRank?.colorCode || "#ffffff",
+        progress: 65, // Calculate based on attendance requirements vs actual attendance later
+        streak: 0, // Calculate from attendance logs
     };
 
     return (

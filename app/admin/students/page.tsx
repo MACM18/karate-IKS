@@ -1,7 +1,32 @@
-import { StudentTable } from "@/components/admin/StudentTable";
+import { StudentTable, Student } from "@/components/admin/StudentTable";
 import { Search, Filter, Plus } from "lucide-react";
+import { prisma } from "@/app/lib/prisma";
 
-export default function AdminStudentsPage() {
+export default async function AdminStudentsPage() {
+    const rawStudents = await prisma.studentProfile.findMany({
+        include: {
+            user: true,
+            currentRank: true,
+            attendance: {
+                orderBy: { date: 'desc' },
+                take: 1
+            }
+        },
+        orderBy: { createdAt: 'desc' }
+    });
+
+    const students: Student[] = rawStudents.map(profile => ({
+        id: profile.userId, // Use User ID for actions
+        name: profile.user.name || "Unknown",
+        email: profile.user.email,
+        rank: profile.currentRank?.name || "No Rank",
+        joinDate: profile.createdAt.toISOString().split('T')[0],
+        status: "active", // Logic could be improved based on last attendance
+        lastAttendance: profile.attendance[0]
+            ? new Date(profile.attendance[0].date).toLocaleDateString()
+            : "Never"
+    }));
+
     return (
         <div className="p-8">
             {/* Header */}
@@ -35,7 +60,7 @@ export default function AdminStudentsPage() {
 
             {/* Table */}
             <div className="bg-zinc-950 border border-zinc-900 rounded-lg overflow-hidden">
-                <StudentTable />
+                <StudentTable students={students} />
             </div>
         </div>
     );

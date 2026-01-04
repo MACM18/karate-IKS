@@ -30,11 +30,11 @@ export async function GET(req: Request) {
 
 // POST: Create a new student (Admin Only)
 export async function POST(req: Request) {
-    const session = await auth();
-
-    if (!session || session.user.role !== 'ADMIN' && session.user.role !== 'SENSEI') {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // Public Registration (Allow anyone to join)
+    // const session = await auth();
+    // if (!session || session.user.role !== 'ADMIN' && session.user.role !== 'SENSEI') {
+    //    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // }
 
     try {
         const body = await req.json();

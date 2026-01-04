@@ -4,18 +4,20 @@ import React, { useState } from "react";
 import { Check, User } from "lucide-react";
 
 interface CheckInCardProps {
+    id: string;
     name: string;
     rank: string;
     streak: number;
+    onCheckIn: (id: string) => void;
 }
 
-export function CheckInCard({ name, rank, streak }: CheckInCardProps) {
+export function CheckInCard({ id, name, rank, streak, onCheckIn }: CheckInCardProps) {
     const [checkedIn, setCheckedIn] = useState(false);
 
     const handleCheckIn = () => {
         if (!checkedIn) {
             setCheckedIn(true);
-            // Logic to sync with backend would go here
+            onCheckIn(id);
         }
     };
 
