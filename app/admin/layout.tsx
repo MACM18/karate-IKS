@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Users, LayoutDashboard, Award, Settings, LogOut, Calendar, PenTool, FileText } from "lucide-react";
+import { Users, LayoutDashboard, Award, Settings, LogOut, Calendar, PenTool, FileText, Image as ImageIcon, Trophy } from "lucide-react";
 
 export default function AdminLayout({
     children,
@@ -56,11 +56,25 @@ export default function AdminLayout({
                         <span className="uppercase text-sm tracking-wide">Exam Forge</span>
                     </Link>
                     <Link
-                        href="/admin/content"
+                        href="/admin/content/news"
                         className="flex items-center gap-3 px-4 py-3 text-zinc-400 hover:text-white hover:bg-zinc-900 rounded transition-colors"
                     >
                         <PenTool size={20} />
-                        <span className="uppercase text-sm tracking-wide">Content CMS</span>
+                        <span className="uppercase text-sm tracking-wide">News CMS</span>
+                    </Link>
+                    <Link
+                        href="/admin/content/gallery"
+                        className="flex items-center gap-3 px-4 py-3 text-zinc-400 hover:text-white hover:bg-zinc-900 rounded transition-colors"
+                    >
+                        <ImageIcon size={20} />
+                        <span className="uppercase text-sm tracking-wide">Gallery</span>
+                    </Link>
+                    <Link
+                        href="/admin/students/achievements"
+                        className="flex items-center gap-3 px-4 py-3 text-zinc-400 hover:text-white hover:bg-zinc-900 rounded transition-colors"
+                    >
+                        <Trophy size={20} />
+                        <span className="uppercase text-sm tracking-wide">Honors</span>
                     </Link>
                     <Link
                         href="/admin/settings"

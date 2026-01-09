@@ -3,8 +3,9 @@ import { HeroSection } from "@/components/HeroSection";
 import { ProgramBento } from "@/components/ProgramBento";
 import { LineageSection } from "@/components/LineageSection";
 import { InstructorSpotlight } from "@/components/InstructorSpotlight";
-import { Shield, Zap, Target, ArrowRight } from "lucide-react";
+import { ArrowRight, Bell, Shield, Target, Zap } from "lucide-react";
 import { prisma } from "@/app/lib/prisma";
+import { auth } from "@/auth";
 import { NewsCard } from "@/components/NewsCard";
 import Image from "next/image";
 
@@ -20,10 +21,65 @@ export default async function Home() {
         take: 4
     });
 
+    const session = await auth();
+    let activeExams: any[] = [];
+    if (session) {
+        activeExams = await prisma.examTemplate.findMany({
+            where: {
+                isActive: true,
+                openDate: { lte: new Date() },
+                OR: [
+                    { deadline: null },
+                    { deadline: { gte: new Date() } }
+                ]
+            },
+            take: 2
+        });
+    }
+
     return (
-        <div className="min-h-screen bg-background text-foreground">
-            <main>
-                <HeroSection />
+        <main className="bg-black min-h-screen">
+            <HeroSection />
+
+            {/* Dojo Alerts - Authenticated Only */}
+            {session && activeExams.length > 0 && (
+                <section className="py-8 bg-primary/5 border-y border-primary/10">
+                    <div className="max-w-7xl mx-auto px-4 md:px-8">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center text-primary animate-pulse">
+                                    <Bell size={24} />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-heading uppercase text-white tracking-widest leading-none">Dojo Alerts</h2>
+                                    <p className="text-zinc-500 text-sm mt-1 uppercase font-black tracking-widest text-[10px]">Active Exams & Registrations</p>
+                                </div>
+                            </div>
+                            <div className="flex flex-wrap gap-4">
+                                {activeExams.map((exam) => (
+                                    <Link
+                                        key={exam.id}
+                                        href={`/student/exams?id=${exam.id}`}
+                                        className="bg-black/40 border border-zinc-800 p-4 flex items-center gap-4 hover:border-primary transition-all group"
+                                    >
+                                        <div className="text-left">
+                                            <div className="text-sm font-bold text-white uppercase group-hover:text-primary">{exam.title}</div>
+                                            {exam.deadline && (
+                                                <div className="text-[10px] text-zinc-500 uppercase font-black tracking-widest mt-1 italic">
+                                                    Deadline: {new Date(exam.deadline).toLocaleDateString()}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <ArrowRight size={16} className="text-zinc-700 group-hover:text-primary transition-transform group-hover:translate-x-1" />
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            )}
+
+            <div className="max-w-7xl mx-auto px-4 md:px-8 space-y-32 py-32">
 
                 {/* Lineage & Tradition Section */}
                 <LineageSection />
@@ -164,8 +220,8 @@ export default async function Home() {
                         </div>
                     </div>
                 </section>
-            </main>
-        </div>
+            </div>
+        </main>
     );
 }
 

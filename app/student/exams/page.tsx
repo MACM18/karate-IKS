@@ -33,7 +33,10 @@ export default async function StudentExamsPage({ searchParams }: { searchParams:
 
     // List available exams and my applications
     const templates = await prisma.examTemplate.findMany({
-        where: { isActive: true },
+        where: {
+            isActive: true,
+            openDate: { lte: new Date() }
+        },
         orderBy: { createdAt: "desc" }
     });
 
@@ -58,26 +61,44 @@ export default async function StudentExamsPage({ searchParams }: { searchParams:
                     </h2>
 
                     <div className="grid grid-cols-1 gap-4">
-                        {templates.map((template) => (
-                            <Link
-                                key={template.id}
-                                href={`/student/exams?id=${template.id}`}
-                                className="bg-zinc-900 border border-zinc-800 p-6 flex flex-col md:flex-row md:items-center justify-between group hover:border-primary/50 transition-all gap-4"
-                            >
-                                <div className="space-y-1">
-                                    <div className="flex items-center gap-3">
-                                        <h3 className="text-xl font-bold text-white uppercase tracking-tight group-hover:text-primary transition-colors">{template.title}</h3>
-                                        <span className="px-2 py-0.5 bg-zinc-800 text-[10px] font-black uppercase tracking-widest text-zinc-400 rounded-sm">
-                                            {template.type}
-                                        </span>
+                        {templates.map((template) => {
+                            const isPastDeadline = template.deadline && new Date(template.deadline) < new Date();
+
+                            return (
+                                <div
+                                    key={template.id}
+                                    className={`bg-zinc-900 border border-zinc-800 p-6 flex flex-col md:flex-row md:items-center justify-between group transition-all gap-4 ${isPastDeadline ? 'opacity-50 grayscale' : 'hover:border-primary/50'}`}
+                                >
+                                    <div className="space-y-1">
+                                        <div className="flex items-center gap-3">
+                                            <h3 className={`text-xl font-bold text-white uppercase tracking-tight transition-colors ${!isPastDeadline && 'group-hover:text-primary'}`}>{template.title}</h3>
+                                            <span className="px-2 py-0.5 bg-zinc-800 text-[10px] font-black uppercase tracking-widest text-zinc-400 rounded-sm">
+                                                {template.type}
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-zinc-500 line-clamp-1">{template.description || "No description provided."}</p>
+                                        {template.deadline && (
+                                            <p className={`text-[10px] font-black uppercase tracking-widest mt-2 ${isPastDeadline ? 'text-red-500' : 'text-zinc-400'}`}>
+                                                Deadline: {new Date(template.deadline).toLocaleDateString()} {isPastDeadline && "(CLOSED)"}
+                                            </p>
+                                        )}
                                     </div>
-                                    <p className="text-xs text-zinc-500 line-clamp-1">{template.description || "No description provided."}</p>
+
+                                    {!isPastDeadline ? (
+                                        <Link
+                                            href={`/student/exams?id=${template.id}`}
+                                            className="flex items-center gap-4 text-primary font-black uppercase tracking-widest text-xs"
+                                        >
+                                            Apply Now <ChevronRight size={14} />
+                                        </Link>
+                                    ) : (
+                                        <div className="flex items-center gap-4 text-zinc-600 font-black uppercase tracking-widest text-xs">
+                                            Closed
+                                        </div>
+                                    )}
                                 </div>
-                                <div className="flex items-center gap-4 text-primary font-black uppercase tracking-widest text-xs">
-                                    Apply Now <ChevronRight size={14} />
-                                </div>
-                            </Link>
-                        ))}
+                            );
+                        })}
 
                         {templates.length === 0 && (
                             <div className="py-20 text-center bg-zinc-900/50 border border-zinc-800 rounded-sm">
@@ -100,8 +121,8 @@ export default async function StudentExamsPage({ searchParams }: { searchParams:
                                 <div className="flex justify-between items-start">
                                     <h4 className="text-sm font-bold text-white uppercase">{app.template.title}</h4>
                                     <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-sm ${app.status === 'APPROVED' ? 'bg-green-900/30 text-green-400' :
-                                            app.status === 'REJECTED' ? 'bg-red-900/30 text-red-400' :
-                                                'bg-zinc-800 text-zinc-400'
+                                        app.status === 'REJECTED' ? 'bg-red-900/30 text-red-400' :
+                                            'bg-zinc-800 text-zinc-400'
                                         }`}>
                                         {app.status}
                                     </span>

@@ -17,6 +17,8 @@ export function ExamTemplateForm() {
     const [type, setType] = useState("GRADING");
     const [folderName, setFolderName] = useState("exams");
     const [fields, setFields] = useState<Field[]>([]);
+    const [openDate, setOpenDate] = useState(new Date().toISOString().split('T')[0]);
+    const [deadline, setDeadline] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const addField = (fieldType: Field["type"]) => {
@@ -52,6 +54,8 @@ export function ExamTemplateForm() {
         formData.append("description", description);
         formData.append("type", type);
         formData.append("folderName", folderName);
+        formData.append("openDate", openDate);
+        if (deadline) formData.append("deadline", deadline);
         formData.append("fields", JSON.stringify(fields));
 
         try {
@@ -59,6 +63,7 @@ export function ExamTemplateForm() {
             alert("Exam Template created successfully!");
             setTitle("");
             setDescription("");
+            setDeadline("");
             setFields([]);
         } catch (error) {
             console.error(error);
@@ -94,6 +99,28 @@ export function ExamTemplateForm() {
                         <option value="COMPETITION">Competition</option>
                         <option value="OTHER">Other Event</option>
                     </select>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                    <label className="block text-xs font-black uppercase tracking-widest text-zinc-500">Opening Date</label>
+                    <input
+                        type="date"
+                        value={openDate}
+                        onChange={(e) => setOpenDate(e.target.value)}
+                        className="w-full bg-black border border-zinc-800 p-3 text-white focus:border-primary outline-none transition-colors"
+                        required
+                    />
+                </div>
+                <div className="space-y-4">
+                    <label className="block text-xs font-black uppercase tracking-widest text-zinc-500">Deadline (Optional)</label>
+                    <input
+                        type="date"
+                        value={deadline}
+                        onChange={(e) => setDeadline(e.target.value)}
+                        className="w-full bg-black border border-zinc-800 p-3 text-white focus:border-primary outline-none transition-colors"
+                    />
                 </div>
             </div>
 
