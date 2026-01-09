@@ -430,17 +430,4 @@ export async function updateStudentClass(studentId: string, classId: string) {
     revalidatePath('/admin/students');
 }
 
-export async function authenticate(
-    prevState: string | undefined,
-    formData: FormData,
-) {
-    try {
-        const { signIn } = await import("@/auth");
-        await signIn('credentials', formData);
-    } catch (error: any) {
-        if (error.type === 'CredentialsSignin') {
-            return 'Invalid credentials.';
-        }
-        throw error;
-    }
-}
+// authenticate function removed - using client-side signIn in login page

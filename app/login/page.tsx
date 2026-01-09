@@ -1,14 +1,50 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import { authenticate } from "@/app/lib/actions";
-import { User, Shield, ArrowRight, Lock } from "lucide-react";
+import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { User, Shield, ArrowRight, Lock, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
 export default function LoginPage() {
-    const [errorMessage, dispatch] = useActionState(authenticate, undefined);
+    const router = useRouter();
     const [role, setRole] = useState<"student" | "admin">("student");
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setError(null);
+
+        const formData = new FormData(e.currentTarget);
+        const email = formData.get("email") as string;
+        const password = formData.get("password") as string;
+
+        try {
+            const result = await signIn("credentials", {
+                email,
+                password,
+                redirect: false,
+            });
+
+            if (result?.error) {
+                setError("Invalid credentials. Access Denied.");
+            } else {
+                // Determine redirect path based on user role would ideally happen here, 
+                // but NextAuth redirect: false doesn't give us the user role directly.
+                // However, we can perform a quick check or just redirect to the relevant dashboard
+                // since the toggle already specifies the intent.
+                router.push(role === "admin" ? "/admin/dashboard" : "/student/dashboard");
+                router.refresh();
+            }
+        } catch (err) {
+            setError("A system error occurred. Please try again.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-background flex items-center justify-center p-6 relative overflow-hidden">
@@ -57,7 +93,7 @@ export default function LoginPage() {
                     </button>
                 </div>
 
-                <form action={dispatch} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
                         <label className="block text-[10px] uppercase font-black tracking-widest text-muted-foreground mb-3">Gateway Address</label>
                         <div className="relative group">
@@ -66,7 +102,6 @@ export default function LoginPage() {
                                 name="email"
                                 type="email"
                                 placeholder={role === "student" ? "STUDENT@IKS.COM" : "SENSEI@IKS.COM"}
-                                defaultValue={role === "student" ? "student@example.com" : "sensei@karate-iks.com"}
                                 className="w-full bg-background border border-border rounded-sm py-4 pl-12 pr-4 text-foreground text-sm focus:outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/30 font-bold"
                                 required
                             />
@@ -81,7 +116,6 @@ export default function LoginPage() {
                                 name="password"
                                 type="password"
                                 placeholder="••••••••"
-                                defaultValue="123456"
                                 className="w-full bg-background border border-border rounded-sm py-4 pl-12 pr-4 text-foreground text-sm focus:outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/30 font-bold"
                                 required
                                 minLength={6}
@@ -90,22 +124,27 @@ export default function LoginPage() {
                     </div>
 
                     <div className="py-2 h-6">
-                        {errorMessage && (
+                        {(error) && (
                             <motion.p
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 className="text-primary text-[10px] font-bold uppercase tracking-widest text-center"
                             >
-                                {errorMessage}
+                                {error}
                             </motion.p>
                         )}
                     </div>
 
                     <button
                         type="submit"
-                        className="w-full py-5 bg-primary hover:bg-red-700 text-white font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-[0_10px_20px_rgba(220,38,38,0.2)]"
+                        disabled={isLoading}
+                        className="w-full py-5 bg-primary hover:bg-red-700 text-white font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-[0_10px_20px_rgba(220,38,38,0.2)] disabled:opacity-50"
                     >
-                        Validate Access <ArrowRight size={18} />
+                        {isLoading ? (
+                            <Loader2 className="animate-spin" size={18} />
+                        ) : (
+                            <>Validate Access <ArrowRight size={18} /></>
+                        )}
                     </button>
                 </form>
 
