@@ -11,12 +11,17 @@ import {
     Search,
     Trophy,
     Image as ImageIcon,
-    PenTool
+    PenTool,
+    Shield
 } from 'lucide-react';
 import Link from 'next/link';
 import { DataExport } from '@/components/admin/DataExport';
+import { auth } from '@/auth';
 
 export default async function AdminDashboard() {
+    const session = await auth();
+    const isAdmin = session?.user?.role === 'ADMIN';
+
     // Fetch stats
     const [
         studentCount,
@@ -275,6 +280,19 @@ export default async function AdminDashboard() {
                                 <div className="text-[10px] text-zinc-600 font-medium">Manage library & featured shots</div>
                             </div>
                         </Link>
+
+                        {/* Staff Management - ADMIN ONLY */}
+                        {isAdmin && (
+                            <Link href="/admin/staff" className="p-4 bg-zinc-900 border border-zinc-800 flex items-center gap-4 hover:border-primary transition-all group">
+                                <div className="w-10 h-10 bg-zinc-800 flex items-center justify-center text-zinc-500 group-hover:text-primary transition-colors">
+                                    <Shield size={20} />
+                                </div>
+                                <div>
+                                    <div className="text-xs font-black uppercase tracking-widest text-white">Staff Management</div>
+                                    <div className="text-[10px] text-zinc-600 font-medium">Recruit & manage Sensei personnel</div>
+                                </div>
+                            </Link>
+                        )}
                     </div>
                 </div>
             </div>

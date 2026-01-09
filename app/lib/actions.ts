@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 import { uploadFile } from "@/app/lib/storage";
 import { encrypt } from "@/app/lib/encryption";
+import bcrypt from 'bcryptjs';
 
 export async function createGalleryItem(formData: FormData) {
     const session = await auth();
@@ -400,6 +401,49 @@ export async function updateStudentProfile(formData: FormData) {
     }
 
     revalidatePath('/student/dashboard');
+}
+
+export async function createSenseiAccount(formData: FormData) {
+    const session = await auth();
+    if (!session || session.user.role !== 'ADMIN') {
+        throw new Error("Unauthorized");
+    }
+
+    const name = formData.get('name') as string;
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await prisma.user.create({
+        data: {
+            name,
+            email,
+            passwordHash: hashedPassword,
+            role: 'SENSEI',
+        }
+    });
+
+    revalidatePath('/admin/staff');
+    return user;
+}
+
+export async function deleteSenseiAccount(userId: string) {
+    const session = await auth();
+    if (!session || session.user.role !== 'ADMIN') {
+        throw new Error("Unauthorized");
+    }
+
+    // Don't allow deleting yourself
+    if (session.user.id === userId) {
+        throw new Error("Cannot delete your own account");
+    }
+
+    await prisma.user.delete({
+        where: { id: userId }
+    });
+
+    revalidatePath('/admin/staff');
 }
 
 export async function toggleStudentActiveStatus(studentId: string, isActive: boolean) {
