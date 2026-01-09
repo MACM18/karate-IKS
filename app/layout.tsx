@@ -3,6 +3,7 @@ import { Inter, Oswald } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { ThemeProvider } from "next-themes";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const oswald = Oswald({ subsets: ["latin"], variable: "--font-oswald" });
@@ -18,11 +19,13 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
-            <body className={`${inter.variable} ${oswald.variable} antialiased bg-black text-white`}>
-                <Navbar />
-                {children}
-                <Footer />
+        <html lang="en" suppressHydrationWarning>
+            <body className={`${inter.variable} ${oswald.variable} antialiased`}>
+                <ThemeProvider attribute="class">
+                    <Navbar />
+                    {children}
+                    <Footer />
+                </ThemeProvider>
             </body>
         </html>
     );

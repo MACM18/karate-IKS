@@ -2,47 +2,28 @@ import Link from "next/link";
 
 export function HeroSection() {
     return (
-        <section className="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden">
+        <section className="relative h-[80vh] min-h-[500px] flex items-center justify-center text-center px-4">
             {/* Background Image with Overlay */}
             <div
-                className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
-                style={{ backgroundImage: 'url("/hero-bg.png")' }}
+                className="absolute inset-0 z-0 bg-cover bg-center"
+                style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1584892305315-7221462e7e8a?q=80&w=2070&auto=format&fit=crop")' }}
             >
-                <div className="absolute inset-0 bg-black/70 bg-blend-overlay" />
-                {/* Added a gradient fade at the bottom for smooth transition */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90" />
+                <div className="absolute inset-0 bg-black/50" />
             </div>
 
-            <div className="relative z-10 container mx-auto px-4 text-center">
-                <h2 className="text-action font-bold tracking-[0.2em] uppercase mb-4 animate-in fade-in slide-in-from-bottom-4 duration-1000">
-                    International Karate School
-                </h2>
-
-                <h1 className="text-6xl md:text-8xl font-heading font-black uppercase tracking-tighter text-white mb-6 leading-none">
-                    Forged in <br />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-100 to-gray-500">
-                        Discipline
-                    </span>
+            <div className="relative z-10 container mx-auto">
+                <h1 className="text-4xl md:text-6xl font-heading font-black uppercase tracking-tighter text-white mb-4">
+                    Building Confidence and Discipline Through Shito-Ryu Karate
                 </h1>
-
-                <p className="text-xl md:text-2xl text-zinc-300 max-w-2xl mx-auto mb-10 font-light text-balance">
-                    Master the art of Shito-Ryu Karate. Build strength, character, and confidence in a traditional dojo environment.
+                <p className="text-lg md:text-xl text-zinc-200 max-w-3xl mx-auto mb-8">
+                    Classes for Children, Youth, and Adults in Horana.
                 </p>
-
-                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                    <Link
-                        href="/join"
-                        className="px-10 py-4 bg-action text-white font-bold text-lg uppercase tracking-widest hover:bg-red-700 transition-all hover:scale-105"
-                    >
-                        Start Your Journey
-                    </Link>
-                    <Link
-                        href="/student/dashboard"
-                        className="px-10 py-4 border border-zinc-600 text-zinc-300 font-bold text-lg uppercase tracking-widest hover:border-white hover:text-white transition-all"
-                    >
-                        Student Portal
-                    </Link>
-                </div>
+                <Link
+                    href="/schedule"
+                    className="inline-block px-10 py-4 bg-white text-black font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+                >
+                    View Class Schedule
+                </Link>
             </div>
         </section>
     );

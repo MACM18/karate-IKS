@@ -9,14 +9,14 @@ interface FeatureCardProps {
 
 export function FeatureCard({ icon: Icon, title, description }: FeatureCardProps) {
     return (
-        <div className="flex flex-col items-center text-center p-8 border border-zinc-900 bg-zinc-950/50 rounded-lg hover:border-action/50 hover:bg-zinc-900 transition-all duration-300 group">
-            <div className="mb-6 p-4 rounded-full bg-zinc-900 text-zinc-400 group-hover:text-action group-hover:bg-zinc-800 transition-colors">
-                <Icon size={32} />
+        <div className="flex flex-col items-center text-center p-8 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg hover:shadow-lg dark:hover:border-zinc-700 transition-all duration-300 group">
+            <div className="mb-6">
+                <Icon size={40} className="text-zinc-600 dark:text-zinc-400" />
             </div>
-            <h3 className="text-xl font-heading uppercase tracking-wide mb-3 text-white">
+            <h3 className="text-xl font-heading uppercase tracking-wide mb-3 text-zinc-900 dark:text-white">
                 {title}
             </h3>
-            <p className="text-zinc-500 leading-relaxed max-w-sm">
+            <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed max-w-sm">
                 {description}
             </p>
         </div>
