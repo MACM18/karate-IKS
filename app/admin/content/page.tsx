@@ -16,10 +16,12 @@ export default function ContentPage() {
     const [category, setCategory] = useState("News");
     const [content, setContent] = useState("");
     const [imageUrl, setImageUrl] = useState("");
+    const [postFile, setPostFile] = useState<File | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Gallery State
     const [galleryUrl, setGalleryUrl] = useState("");
+    const [galleryFile, setGalleryFile] = useState<File | null>(null);
     const [galleryCaption, setGalleryCaption] = useState("");
     const [galleryCategory, setGalleryCategory] = useState("Class");
 
@@ -27,18 +29,22 @@ export default function ContentPage() {
         if (!title || !content) return;
         setIsSubmitting(true);
         try {
-            await createPost({
-                title,
-                content,
-                category: category.toUpperCase(),
-                imageUrl: imageUrl || undefined,
-                published: true
-            });
+            const formData = new FormData();
+            formData.append("title", title);
+            formData.append("content", content);
+            formData.append("category", category.toUpperCase());
+            if (imageUrl) formData.append("imageUrl", imageUrl);
+            if (postFile) formData.append("file", postFile);
+            formData.append("published", "true");
+
+            await createPost(formData);
             alert("Post published successfully!");
             setTitle("");
             setContent("");
             setImageUrl("");
+            setPostFile(null);
         } catch (error) {
+            console.error(error);
             alert("Failed to publish post.");
         } finally {
             setIsSubmitting(false);
@@ -46,19 +52,23 @@ export default function ContentPage() {
     };
 
     const handleAddGallery = async () => {
-        if (!galleryUrl) return;
+        if (!galleryUrl && !galleryFile) return;
         setIsSubmitting(true);
         try {
-            await createGalleryItem({
-                url: galleryUrl,
-                caption: galleryCaption,
-                category: galleryCategory,
-                featured: false
-            });
+            const formData = new FormData();
+            if (galleryUrl) formData.append("url", galleryUrl);
+            if (galleryFile) formData.append("file", galleryFile);
+            formData.append("caption", galleryCaption);
+            formData.append("category", galleryCategory);
+            formData.append("featured", "false");
+
+            await createGalleryItem(formData);
             alert("Image added to gallery!");
             setGalleryUrl("");
+            setGalleryFile(null);
             setGalleryCaption("");
         } catch (error) {
+            console.error(error);
             alert("Failed to add image.");
         } finally {
             setIsSubmitting(false);
@@ -131,15 +141,25 @@ export default function ContentPage() {
                                 </div>
                             </div>
 
-                            <div className="space-y-3">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Visual Asset URL</label>
-                                <input
-                                    type="text"
-                                    value={imageUrl}
-                                    onChange={(e) => setImageUrl(e.target.value)}
-                                    placeholder="https://images.unsplash.com/..."
-                                    className="w-full bg-muted/10 border border-border py-4 px-4 text-foreground text-sm focus:outline-none focus:border-primary transition-all font-bold placeholder:opacity-30"
-                                />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Visual Asset URL</label>
+                                    <input
+                                        type="text"
+                                        value={imageUrl}
+                                        onChange={(e) => setImageUrl(e.target.value)}
+                                        placeholder="https://images.unsplash.com/..."
+                                        className="w-full bg-muted/10 border border-border py-4 px-4 text-foreground text-sm focus:outline-none focus:border-primary transition-all font-bold placeholder:opacity-30"
+                                    />
+                                </div>
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Or Upload File</label>
+                                    <input
+                                        type="file"
+                                        onChange={(e) => setPostFile(e.target.files?.[0] || null)}
+                                        className="w-full bg-muted/10 border border-border py-3.5 px-4 text-foreground text-xs focus:outline-none focus:border-primary transition-all font-bold file:bg-primary file:text-white file:border-none file:px-3 file:py-1 file:mr-4 file:text-[10px] file:uppercase file:font-black file:tracking-widest cursor-pointer"
+                                    />
+                                </div>
                             </div>
 
                             <div className="space-y-3 flex-1">
@@ -172,7 +192,7 @@ export default function ContentPage() {
                                     excerpt={content || "The transmission content will appear here..."}
                                     date={new Date().toLocaleDateString()}
                                     category={category}
-                                    imageUrl={imageUrl || undefined}
+                                    imageUrl={imageUrl || (postFile ? URL.createObjectURL(postFile) : undefined)}
                                 />
                             </div>
                         </div>
@@ -202,6 +222,14 @@ export default function ContentPage() {
                                     />
                                 </div>
                                 <div className="space-y-3">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Or Upload File</label>
+                                    <input
+                                        type="file"
+                                        onChange={(e) => setGalleryFile(e.target.files?.[0] || null)}
+                                        className="w-full bg-background border border-border py-3.5 px-4 text-foreground text-xs focus:outline-none focus:border-primary transition-all font-bold file:bg-primary file:text-white file:border-none file:px-3 file:py-1 file:mr-4 file:text-[10px] file:uppercase file:font-black file:tracking-widest cursor-pointer"
+                                    />
+                                </div>
+                                <div className="space-y-3">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Classification</label>
                                     <select
                                         value={galleryCategory}
@@ -214,7 +242,7 @@ export default function ContentPage() {
                                         <option>History</option>
                                     </select>
                                 </div>
-                                <div className="md:col-span-2 space-y-3">
+                                <div className="space-y-3">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Mission Legend (Caption)</label>
                                     <input
                                         type="text"
@@ -228,7 +256,7 @@ export default function ContentPage() {
 
                             <button
                                 onClick={handleAddGallery}
-                                disabled={isSubmitting || !galleryUrl}
+                                disabled={isSubmitting || (!galleryUrl && !galleryFile)}
                                 className="w-full py-5 bg-foreground text-background font-black uppercase tracking-widest text-xs hover:bg-primary hover:text-white transition-all shadow-xl disabled:opacity-50"
                             >
                                 {isSubmitting ? "UPLOADING..." : "UPLOAD TO ARCHIVE"}

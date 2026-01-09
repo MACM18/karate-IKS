@@ -1,18 +1,27 @@
 "use server";
 
+import { prisma } from "@/app/lib/prisma";
+import { auth } from "@/auth";
+import { revalidatePath } from "next/cache";
 import { uploadFile } from "@/app/lib/storage";
 
-export async function createGalleryItem(formData: { url?: string; file?: File; caption?: string; category?: string; featured?: boolean }) {
+export async function createGalleryItem(formData: FormData) {
     const session = await auth();
     if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'SENSEI')) {
         throw new Error("Unauthorized");
     }
 
-    let finalUrl = formData.url || "";
+    const url = formData.get('url') as string;
+    const file = formData.get('file') as File;
+    const caption = formData.get('caption') as string;
+    const category = formData.get('category') as string;
+    const featured = formData.get('featured') === 'true';
+
+    let finalUrl = url || "";
 
     // If a file is provided, try to upload it to S3
-    if (formData.file) {
-        const s3Url = await uploadFile(formData.file, "gallery");
+    if (file && file.size > 0) {
+        const s3Url = await uploadFile(file, "gallery");
         if (s3Url) finalUrl = s3Url;
     }
 
@@ -23,9 +32,9 @@ export async function createGalleryItem(formData: { url?: string; file?: File; c
     const item = await prisma.galleryItem.create({
         data: {
             url: finalUrl,
-            caption: formData.caption,
-            category: formData.category,
-            featured: formData.featured || false,
+            caption: caption,
+            category: category,
+            featured: featured,
         }
     });
 
@@ -35,61 +44,34 @@ export async function createGalleryItem(formData: { url?: string; file?: File; c
     return item;
 }
 
-export async function deleteGalleryItem(id: string) {
+export async function createPost(formData: FormData) {
     const session = await auth();
     if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'SENSEI')) {
         throw new Error("Unauthorized");
     }
 
-    await prisma.galleryItem.delete({
-        where: { id }
-    });
+    const title = formData.get('title') as string;
+    const content = formData.get('content') as string;
+    const category = formData.get('category') as string;
+    const imageUrl = formData.get('imageUrl') as string;
+    const file = formData.get('file') as File;
+    const published = formData.get('published') === 'true';
 
-    revalidatePath('/admin/content');
-    revalidatePath('/news');
-}
-
-export async function createAchievement(formData: { title: string; description?: string; studentId: string; date?: Date }) {
-    const session = await auth();
-    if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'SENSEI')) {
-        throw new Error("Unauthorized");
-    }
-
-    const achievement = await prisma.achievement.create({
-        data: {
-            title: formData.title,
-            description: formData.description,
-            studentId: formData.studentId,
-            date: formData.date || new Date(),
-        }
-    });
-
-    revalidatePath('/admin/content');
-    revalidatePath('/news');
-    return achievement;
-}
-
-export async function createPost(formData: { title: string; content: string; category: string; imageUrl?: string; file?: File; published?: boolean }) {
-    const session = await auth();
-    if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'SENSEI')) {
-        throw new Error("Unauthorized");
-    }
-
-    let finalImageUrl = formData.imageUrl || null;
+    let finalImageUrl = imageUrl || null;
 
     // If a file is provided, try to upload it to S3
-    if (formData.file) {
-        const s3Url = await uploadFile(formData.file, "news");
+    if (file && file.size > 0) {
+        const s3Url = await uploadFile(file, "news");
         if (s3Url) finalImageUrl = s3Url;
     }
 
     const post = await prisma.post.create({
         data: {
-            title: formData.title,
-            content: formData.content,
-            category: formData.category as any, // Enum mapping
+            title: title,
+            content: content,
+            category: category as any, // Enum mapping
             imageUrl: finalImageUrl,
-            published: formData.published || false,
+            published: published,
             authorId: session.user.id,
         }
     });
