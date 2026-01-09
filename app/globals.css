@@ -1,25 +1,30 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #111827;
-  --action: #dc2626; /* Crimson Red */
+@theme {
+    /* Colors */
+    --color-background: #ffffff;
+    --color-foreground: #111827; /* zinc-900 */
+    --color-foreground-muted: #71717a; /* zinc-500 */
+    --color-border: #e5e7eb; /* zinc-200 */
+    --color-action: #dc2626;
+
+    /* Inverted Button */
+    --color-button-inverted-bg: #18181b; /* zinc-900 */
+    --color-button-inverted-text: #ffffff;
+    --color-button-inverted-bg-hover: #3f3f46; /* zinc-700 */
+
+    /* Fonts */
+    --font-sans: var(--font-inter);
+    --font-heading: var(--font-oswald);
 }
 
 .dark {
-  --background: #000000;
-  --foreground: #ffffff;
-}
+    --color-background: #000000;
+    --color-foreground: #ffffff;
+    --color-foreground-muted: #a1a1aa; /* zinc-400 */
+    --color-border: #27272a; /* zinc-800 */
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-}
-
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+    --color-button-inverted-bg: #ffffff;
+    --color-button-inverted-text: #000000;
+    --color-button-inverted-bg-hover: #e5e7eb; /* zinc-200 */
 }

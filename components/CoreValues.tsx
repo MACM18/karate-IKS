@@ -6,8 +6,8 @@ export function CoreValues() {
         <section className="py-24 bg-zinc-50 dark:bg-black">
             <div className="container mx-auto px-4">
                 <div className="text-center mb-16">
-                    <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">Our Values</h2>
-                    <h3 className="text-4xl md:text-5xl font-heading uppercase text-zinc-900 dark:text-white mt-2">Why Train With Us?</h3>
+                    <h2 className="text-sm font-bold uppercase tracking-widest text-foreground-muted">Our Values</h2>
+                    <h3 className="text-4xl md:text-5xl font-heading uppercase text-foreground mt-2">Why Train With Us?</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <FeatureCard
