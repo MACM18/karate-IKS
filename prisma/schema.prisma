@@ -49,6 +49,7 @@ model StudentProfile {
   attendance       Attendance[]
   promotions       StudentPromotion[]
   achievements     Achievement[]
+  applications     ExamApplication[]
   
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
@@ -148,6 +149,59 @@ model Resource {
   minRank     Rank?    @relation(fields: [minRankId], references: [id])
   
   createdAt   DateTime @default(now())
+}
+
+// Exam System Models
+enum ExamType {
+  GRADING      // For color belts (Kyu)
+  DAN_GRADING  // For black belts (Dan)
+  COMPETITION
+  OTHER
+}
+
+enum ApplicationStatus {
+  PENDING
+  REVIEWING
+  APPROVED
+  REJECTED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  REFUNDED
+}
+
+model ExamTemplate {
+  id           String   @id @default(cuid())
+  title        String
+  description  String?
+  type         ExamType @default(GRADING)
+  fields       Json     // Array of Field objects [{ name, label, type, required, options? }]
+  folderName   String   @default("exams") // S3 folder for file uploads
+  isActive     Boolean  @default(true)
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  applications ExamApplication[]
+}
+
+model ExamApplication {
+  id               String   @id @default(cuid())
+  studentId        String
+  student          StudentProfile @relation(fields: [studentId], references: [id])
+  
+  templateId       String
+  template         ExamTemplate @relation(fields: [templateId], references: [id])
+  
+  submissionData   Json     // Map of field names to values (including S3 URLs for files)
+  status           ApplicationStatus @default(PENDING)
+  paymentStatus    PaymentStatus     @default(UNPAID)
+  paymentReference String?  // ID of external transaction
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 enum ResourceType {

@@ -1,88 +1,76 @@
-import { PrismaClient } from '@prisma/client'
-import bcrypt from 'bcryptjs'
+import { PrismaClient, Role } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 async function main() {
-    console.log('Start seeding ...')
+    console.log('Seed started...');
 
-    // 1. Seed Ranks
+    // 1. Create Default Admin
+    const adminEmail = 'hello@macm.dev';
+    const adminPassword = 'KarateMACM';
+    const hashedPassword = await bcrypt.hash(adminPassword, 10);
+
+    const admin = await prisma.user.upsert({
+        where: { email: adminEmail },
+        update: {
+            passwordHash: hashedPassword,
+            role: Role.ADMIN,
+        },
+        create: {
+            email: adminEmail,
+            name: 'Headquarters Admin',
+            passwordHash: hashedPassword,
+            role: Role.ADMIN,
+        },
+    });
+
+    console.log(`Admin user created/updated: ${admin.email}`);
+
+    // 2. Create Ranks
     const ranks = [
-        { name: 'White', colorCode: '#ffffff', order: 0 },
-        { name: 'Yellow', colorCode: '#ca8a04', order: 1 }, // yellow-600
-        { name: 'Orange', colorCode: '#f97316', order: 2 }, // orange-500
-        { name: 'Green', colorCode: '#16a34a', order: 3 }, // green-600
-        { name: 'Blue', colorCode: '#2563eb', order: 4 }, // blue-600
-        { name: 'Purple', colorCode: '#9333ea', order: 5 }, // purple-600
-        { name: 'Brown', colorCode: '#78350f', order: 6 }, // brown-900
-        { name: 'Red', colorCode: '#dc2626', order: 7 }, // red-600
-        { name: 'Black', colorCode: '#000000', order: 8 },
-    ]
+        { name: '8th Kyu (White Belt)', colorCode: '#FFFFFF', order: 0 },
+        { name: '7th Kyu (White Belt L2)', colorCode: '#F8F8F8', order: 1 },
+        { name: '6th Kyu (Yellow Belt)', colorCode: '#EAB308', order: 2 },
+        { name: '5th Kyu (Green Belt)', colorCode: '#22C55E', order: 3 },
+        { name: '4th Kyu (Green Belt L2)', colorCode: '#16A34A', order: 4 },
+        { name: '3rd Kyu (Brown Belt)', colorCode: '#92400E', order: 5 },
+        { name: '2nd Kyu (Brown Belt L2)', colorCode: '#78350F', order: 6 },
+        { name: '1st Kyu (Brown Belt L3)', colorCode: '#451A03', order: 7 },
+        { name: '1st Dan (Black Belt)', colorCode: '#000000', order: 8 },
+        { name: '2nd Dan (Black Belt)', colorCode: '#000000', order: 9 },
+        { name: '3rd Dan (Black Belt)', colorCode: '#000000', order: 10 },
+        { name: '4th Dan (Black Belt)', colorCode: '#000000', order: 11 },
+        { name: '5th Dan (Black Belt)', colorCode: '#000000', order: 12 },
+        { name: '6th Dan (Black Belt)', colorCode: '#000000', order: 13 },
+        { name: '7th Dan (Black Belt)', colorCode: '#000000', order: 14 },
+        { name: '8th Dan (Black Belt)', colorCode: '#000000', order: 15 },
+    ];
 
     for (const rank of ranks) {
         await prisma.rank.upsert({
             where: { order: rank.order },
-            update: {},
-            create: rank,
-        })
-    }
-    console.log('Ranks seeded.')
-
-    // 2. Seed Sensei (Admin)
-    const senseiPassword = await bcrypt.hash('kata123', 10)
-    const sensei = await prisma.user.upsert({
-        where: { email: 'sensei@karate-iks.com' },
-        update: {
-            passwordHash: senseiPassword,
-        },
-        create: {
-            email: 'sensei@karate-iks.com',
-            name: 'Sensei Miyagi',
-            role: 'SENSEI',
-            passwordHash: senseiPassword,
-        },
-    })
-
-    // 3. Seed Student
-    const studentPassword = await bcrypt.hash('student123', 10)
-    const student = await prisma.user.upsert({
-        where: { email: 'student@example.com' },
-        update: {
-            passwordHash: studentPassword,
-        },
-        create: {
-            email: 'student@example.com',
-            name: 'Daniel San',
-            role: 'STUDENT',
-            passwordHash: studentPassword,
-        },
-    })
-
-    // Link student to White Belt
-    const whiteBelt = await prisma.rank.findFirst({ where: { name: 'White' } })
-    if (whiteBelt) {
-        await prisma.studentProfile.upsert({
-            where: { userId: student.id },
-            update: {},
+            update: {
+                name: rank.name,
+                colorCode: rank.colorCode,
+            },
             create: {
-                userId: student.id,
-                currentRankId: whiteBelt.id,
-                emergencyContact: 'Mr. Miyagi',
-            }
-        })
+                name: rank.name,
+                colorCode: rank.colorCode,
+                order: rank.order,
+            },
+        });
     }
 
-
-    console.log({ sensei, student })
-    console.log('Seeding finished.')
+    console.log('All ranks seeded successfully.');
+    console.log('Seed finished.');
 }
 
 main()
-    .then(async () => {
-        await prisma.$disconnect()
+    .catch((e) => {
+        console.error(e);
+        process.exit(1);
     })
-    .catch(async (e) => {
-        console.error(e)
-        await prisma.$disconnect()
-        process.exit(1)
-    })
+    .finally(async () => {
+        await prisma.$disconnect();
+    });

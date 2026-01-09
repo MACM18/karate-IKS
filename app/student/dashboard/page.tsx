@@ -1,6 +1,6 @@
 import { BeltProgress } from "@/components/BeltProgress";
-import { User, Calendar, BookOpen, Trophy } from "lucide-react";
-
+import { User, Calendar, BookOpen, Trophy, FileText } from "lucide-react";
+import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/app/lib/prisma";
 import { redirect } from "next/navigation";
@@ -114,6 +114,15 @@ export default async function StudentDashboard() {
                         <h3 className="font-heading uppercase text-lg">Upcoming Tournament</h3>
                         <p className="text-sm text-zinc-400 mt-2">Regional Championship<br />Oct 24th, 2026</p>
                         <button className="mt-4 text-xs uppercase font-bold text-action hover:text-red-400">Register Now &rarr;</button>
+                    </div>
+
+                    <div className="p-6 bg-primary/10 border border-primary/20 rounded-lg group hover:bg-primary/20 transition-all">
+                        <FileText className="text-primary mb-4" />
+                        <h3 className="font-heading uppercase text-lg text-white">Grading Portal</h3>
+                        <p className="text-sm text-zinc-400 mt-2">Apply for your next rank exam</p>
+                        <Link href="/student/exams" className="inline-block mt-4 text-xs font-black uppercase tracking-widest text-primary hover:text-white">
+                            View Available Exams &rarr;
+                        </Link>
                     </div>
                 </aside>
 
