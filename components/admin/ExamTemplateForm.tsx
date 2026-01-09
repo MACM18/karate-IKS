@@ -11,7 +11,7 @@ interface Field {
     required: boolean;
 }
 
-export function ExamTemplateForm() {
+export function ExamTemplateForm({ onSuccess }: { onSuccess?: () => void }) {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [type, setType] = useState("GRADING");
@@ -65,6 +65,7 @@ export function ExamTemplateForm() {
             setDescription("");
             setDeadline("");
             setFields([]);
+            if (onSuccess) onSuccess();
         } catch (error) {
             console.error(error);
             alert("Failed to create template.");

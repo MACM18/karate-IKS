@@ -9,7 +9,7 @@ interface Student {
     name: string;
 }
 
-export function AchievementForm({ students }: { students: Student[] }) {
+export function AchievementForm({ students, onSuccess }: { students: Student[], onSuccess?: () => void }) {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [studentId, setStudentId] = useState('');
@@ -36,6 +36,7 @@ export function AchievementForm({ students }: { students: Student[] }) {
             setStudentId('');
             setSearchTerm('');
             alert('Achievement bestowed successfully!');
+            if (onSuccess) onSuccess();
         } catch (error) {
             console.error(error);
             alert('Failed to bestow achievement.');

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { createGalleryItem } from '@/app/lib/actions';
 import { Save, Plus, ImageIcon, Star } from 'lucide-react';
 
-export function GalleryUploadForm() {
+export function GalleryUploadForm({ onSuccess }: { onSuccess?: () => void }) {
     const [caption, setCaption] = useState('');
     const [category, setCategory] = useState('Dojo');
     const [url, setUrl] = useState('');
@@ -24,6 +24,7 @@ export function GalleryUploadForm() {
             setUrl('');
             setFeatured(false);
             alert('Visual intel archived successfully!');
+            if (onSuccess) onSuccess();
         } catch (error) {
             console.error(error);
             alert('Failed to archive visual intel.');

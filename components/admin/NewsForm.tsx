@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { createPost } from '@/app/lib/actions';
 import { Save, Plus, ImageIcon, Globe, Lock } from 'lucide-react';
 
-export function NewsForm() {
+export function NewsForm({ onSuccess }: { onSuccess?: () => void }) {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [category, setCategory] = useState('NEWS');
@@ -25,6 +25,7 @@ export function NewsForm() {
             setContent('');
             setImageUrl('');
             alert('Post forged successfully!');
+            if (onSuccess) onSuccess();
         } catch (error) {
             console.error(error);
             alert('Failed to forge post.');

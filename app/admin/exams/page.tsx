@@ -4,6 +4,7 @@ import { Trash2, FileText, Users, Clock, Eye } from "lucide-react";
 import { deleteExamTemplate } from "@/app/lib/actions";
 import { PendingApplicationsList } from "@/components/admin/PendingApplicationsList";
 import Link from "next/link";
+import { FormOverlay } from "@/components/admin/FormOverlay";
 
 export default async function AdminExamsPage() {
     const templates = await prisma.examTemplate.findMany({
@@ -12,7 +13,7 @@ export default async function AdminExamsPage() {
     });
 
     return (
-        <div className="p-4 md:p-8 space-y-12 max-w-7xl mx-auto">
+        <div className="p-4 md:p-8 space-y-12 max-w-7xl mx-auto min-h-screen relative">
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
                     <h1 className="text-5xl font-heading font-black uppercase tracking-tighter text-white">Exam <span className="text-primary italic">Forge</span></h1>
@@ -20,14 +21,14 @@ export default async function AdminExamsPage() {
                 </div>
             </header>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                <div className="lg:col-span-2">
+            <div className="space-y-16">
+                <section>
                     <h2 className="text-sm font-black uppercase tracking-[0.3em] text-zinc-500 mb-8 flex items-center gap-3">
                         <span className="h-px w-8 bg-zinc-800"></span>
                         Active Templates
                     </h2>
 
-                    <div className="grid grid-cols-1 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {templates.map((template) => (
                             <div key={template.id} className="bg-zinc-900 border border-zinc-800 p-6 flex items-center justify-between group hover:border-zinc-700 transition-all">
                                 <div className="space-y-1">
@@ -45,7 +46,7 @@ export default async function AdminExamsPage() {
 
                                 <div className="flex items-center gap-4">
                                     <Link href={`/admin/exams/review?id=${template.id}`} className="text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-white flex items-center gap-2">
-                                        <Eye size={14} /> Review All
+                                        <Eye size={14} /> Review
                                     </Link>
                                     <form action={async () => {
                                         "use server";
@@ -58,9 +59,18 @@ export default async function AdminExamsPage() {
                                 </div>
                             </div>
                         ))}
-                    </div>
 
-                    <h2 className="text-sm font-black uppercase tracking-[0.3em] text-zinc-500 mt-16 mb-8 flex items-center gap-3">
+                        {templates.length === 0 && (
+                            <div className="col-span-full py-24 text-center border border-dashed border-zinc-800 text-zinc-600">
+                                <FileText size={48} className="mx-auto mb-4 opacity-20" />
+                                <p className="italic font-medium">No exam templates created yet.</p>
+                            </div>
+                        )}
+                    </div>
+                </section>
+
+                <section>
+                    <h2 className="text-sm font-black uppercase tracking-[0.3em] text-zinc-500 mb-8 flex items-center gap-3">
                         <span className="h-px w-8 bg-zinc-800"></span>
                         Pending Submissions
                     </h2>
@@ -68,16 +78,12 @@ export default async function AdminExamsPage() {
                     <div className="bg-zinc-900 border border-zinc-800 overflow-hidden">
                         <PendingApplicationsList />
                     </div>
-                </div>
-
-                <aside className="space-y-8">
-                    <h2 className="text-sm font-black uppercase tracking-[0.3em] text-zinc-500 mb-8 flex items-center gap-3">
-                        <span className="h-px w-8 bg-zinc-800"></span>
-                        New Template
-                    </h2>
-                    <ExamTemplateForm />
-                </aside>
+                </section>
             </div>
+
+            <FormOverlay title="New Exam Template" triggerLabel="Forge Template">
+                <ExamTemplateForm />
+            </FormOverlay>
         </div>
     );
 }

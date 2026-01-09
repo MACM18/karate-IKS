@@ -475,3 +475,45 @@ export async function updateStudentClass(studentId: string, classId: string) {
 }
 
 // authenticate function removed - using client-side signIn in login page
+
+export async function promoteStudents(studentIds: string[]) {
+    const session = await auth();
+    if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'SENSEI')) {
+        throw new Error("Unauthorized");
+    }
+
+    const allRanks = await prisma.rank.findMany({ orderBy: { order: 'asc' } });
+
+    for (const id of studentIds) {
+        await prisma.$transaction(async (tx) => {
+            const student = await tx.studentProfile.findUnique({
+                where: { id },
+                include: { currentRank: true }
+            });
+
+            if (!student) return;
+
+            const currentOrder = student.currentRank?.order ?? -1;
+            const nextRank = allRanks.find(r => r.order === currentOrder + 1);
+
+            if (!nextRank) return;
+
+            // Update student rank
+            await tx.studentProfile.update({
+                where: { id },
+                data: { currentRankId: nextRank.id }
+            });
+
+            // Create promotion history
+            await tx.studentPromotion.create({
+                data: {
+                    studentId: id,
+                    rankId: nextRank.id,
+                    notes: `Promoted from ${student.currentRank?.name || 'White'} to ${nextRank.name}`
+                }
+            });
+        });
+    }
+
+    revalidatePath('/admin/promotions');
+}

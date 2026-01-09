@@ -74,7 +74,7 @@ export default async function AdminDashboard() {
     ];
 
     return (
-        <div className="p-4 md:p-8 space-y-12 max-w-7xl mx-auto">
+        <div className="p-4 md:p-10 space-y-12 w-full">
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
                     <h1 className="text-5xl font-heading font-black uppercase tracking-tighter text-white">HQ <span className="text-primary italic">Dashboard</span></h1>
@@ -122,7 +122,7 @@ export default async function AdminDashboard() {
                         />
                     </div>
 
-                    <div className="bg-zinc-900 border border-zinc-800 overflow-hidden">
+                    <div className="bg-zinc-900 border border-zinc-800 overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="border-b border-zinc-800 bg-black/20">
