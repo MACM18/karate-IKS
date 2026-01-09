@@ -4,8 +4,22 @@ import { ProgramBento } from "@/components/ProgramBento";
 import { LineageSection } from "@/components/LineageSection";
 import { InstructorSpotlight } from "@/components/InstructorSpotlight";
 import { Shield, Zap, Target, ArrowRight } from "lucide-react";
+import { prisma } from "@/app/lib/prisma";
+import { NewsCard } from "@/components/NewsCard";
+import Image from "next/image";
 
-export default function Home() {
+export default async function Home() {
+    const latestPosts = await prisma.post.findMany({
+        where: { published: true },
+        orderBy: { createdAt: "desc" },
+        take: 3
+    });
+
+    const galleryHighlights = await prisma.galleryItem.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 4
+    });
+
     return (
         <div className="min-h-screen bg-background text-foreground">
             <main>
@@ -16,6 +30,74 @@ export default function Home() {
 
                 {/* Programs Bento Grid */}
                 <ProgramBento />
+
+                {/* Latest Intelligence Section */}
+                <section className="py-24 bg-muted/5">
+                    <div className="container mx-auto px-4 lg:px-8">
+                        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+                            <div>
+                                <span className="text-primary font-heading font-bold uppercase tracking-[0.3em] text-sm mb-4 block">Dojo Feed</span>
+                                <h2 className="text-4xl md:text-6xl font-heading font-black uppercase tracking-tight text-foreground leading-[0.9]">
+                                    Latest <span className="text-primary italic">Intelligence</span>
+                                </h2>
+                            </div>
+                            <Link
+                                href="/news"
+                                className="text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group"
+                            >
+                                View All Transmissions <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                            </Link>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            {latestPosts.map((post) => (
+                                <NewsCard
+                                    key={post.id}
+                                    title={post.title}
+                                    excerpt={post.content.substring(0, 120) + "..."}
+                                    date={post.createdAt.toLocaleDateString()}
+                                    category={post.category}
+                                    imageUrl={post.imageUrl || undefined}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                {/* Visual Legacy Snippet */}
+                <section className="py-24 border-t border-border">
+                    <div className="container mx-auto px-4 lg:px-8">
+                        <div className="text-center mb-16">
+                            <span className="text-primary font-heading font-bold uppercase tracking-[0.3em] text-sm mb-4 block">Archive</span>
+                            <h2 className="text-4xl md:text-6xl font-heading font-black uppercase tracking-tight text-foreground">
+                                Visual <span className="text-primary italic">Legacy</span>
+                            </h2>
+                        </div>
+
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            {galleryHighlights.map((item, i) => (
+                                <div key={item.id} className={`relative aspect-square overflow-hidden group border border-border ${i % 2 === 0 ? 'md:translate-y-8' : ''}`}>
+                                    <Image
+                                        src={item.url}
+                                        alt={item.caption || "Gallery Image"}
+                                        fill
+                                        className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110"
+                                    />
+                                    <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="mt-20 text-center">
+                            <Link
+                                href="/gallery"
+                                className="inline-flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.4em] text-foreground hover:text-primary transition-colors border-b-2 border-primary pb-2"
+                            >
+                                Enter the Visual Archives
+                            </Link>
+                        </div>
+                    </div>
+                </section>
 
                 {/* Instructor Spotlight */}
                 <InstructorSpotlight />

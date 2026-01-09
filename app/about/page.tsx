@@ -1,166 +1,154 @@
-"use client";
-
+import { prisma } from "@/app/lib/prisma";
+import { Timeline } from "@/components/Timeline";
 import { motion } from "framer-motion";
-import { Shield, BookOpen, Users, Award, ChevronRight } from "lucide-react";
+import { Shield, BookOpen, Award, Users, ChevronRight, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 
-export default function AboutPage() {
+// Re-enable client features where needed using a wrapper or keeping small client parts
+// For now, I'll convert the main page to a Server Component to fetch data, 
+// and move interactive parts to small client components if necessary.
+// Actually, I can use "use client" for the whole page if I fetch data in a parent or use a different pattern, 
+// but Next.js 13+ allows async server components for data fetching.
+
+export default async function AboutPage() {
+    const senseis = await prisma.user.findMany({
+        where: { role: "SENSEI" },
+        include: { studentProfile: true }
+    });
+
     const dojoKun = [
-        "Seek Perfection of Character",
-        "Be Faithful",
-        "Endeavor",
-        "Respect Others",
-        "Refrain From Violent Behavior"
+        { title: "Character", text: "Seek Perfection of Character", desc: "The ultimate goal of karate is the perfection of the human spirit." },
+        { title: "Sincerity", text: "Be Faithful", desc: "Loyalty to the art, the sensei, and oneself is paramount." },
+        { title: "Effort", text: "Endeavor", desc: "True mastery comes from consistent, dedicated training." },
+        { title: "Etiquette", text: "Respect Others", desc: "Karate begins and ends with courtesy." },
+        { title: "Control", text: "Refrain From Violent Behavior", desc: "The strength found in the dojo is for protection, never aggression." }
     ];
 
     return (
         <div className="min-h-screen bg-background pb-24">
             {/* Heritage Hero */}
-            <section className="relative h-[60vh] min-h-[400px] flex items-center justify-center overflow-hidden">
+            <section className="relative h-[70vh] min-h-[500px] flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 z-0">
-                    <div className="absolute inset-0 bg-black/60 z-10" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-background z-10" />
                     <Image
                         src="https://images.unsplash.com/photo-1555597673-b21d5c935865?q=80&w=2000&auto=format&fit=crop"
                         alt="Traditional Dojo"
                         fill
-                        className="object-cover grayscale"
+                        className="object-cover grayscale brightness-50"
                     />
                 </div>
 
                 <div className="container mx-auto px-4 relative z-20 text-center">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="inline-block py-1 px-3 border border-primary/50 bg-primary/10 rounded-sm mb-6"
-                    >
+                    <div className="inline-block py-1 px-3 border border-primary/50 bg-primary/10 rounded-sm mb-6">
                         <span className="text-primary font-heading font-bold uppercase tracking-[0.3em] text-xs">
-                            Est. 1988
+                            Established 1988
                         </span>
-                    </motion.div>
-                    <motion.h1
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 }}
-                        className="text-5xl md:text-7xl lg:text-8xl font-heading font-black uppercase text-white leading-none tracking-tighter"
-                    >
+                    </div>
+                    <h1 className="text-6xl md:text-8xl lg:text-9xl font-heading font-black uppercase text-white leading-none tracking-tighter">
                         The Path of <br />
                         <span className="text-primary italic">Tradition</span>
-                    </motion.h1>
+                    </h1>
                 </div>
             </section>
 
-            <div className="container mx-auto px-4 lg:px-8 -mt-20 relative z-30">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Stats/Quick Glance */}
-                    {[
-                        { icon: Shield, label: "Lineage", val: "Shinbukan" },
-                        { icon: BookOpen, label: "Curriculum", val: "Traditional" },
-                        { icon: Award, label: "Affiliation", val: "Global" },
-                    ].map((item, i) => (
-                        <motion.div
-                            key={i}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.3 + i * 0.1 }}
-                            className="bg-background border border-border p-8 shadow-2xl flex items-center gap-6"
-                        >
-                            <div className="bg-primary/10 p-4 rounded-sm rotate-3">
-                                <item.icon className="text-primary w-8 h-8 -rotate-3" />
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">{item.label}</p>
-                                <h3 className="text-xl font-heading font-bold uppercase text-foreground">{item.val}</h3>
-                            </div>
-                        </motion.div>
-                    ))}
-                </div>
-
-                {/* Content Sections */}
-                <div className="mt-24 grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
-                    {/* Story Side */}
-                    <div className="space-y-12">
-                        <section>
-                            <h2 className="text-3xl font-heading font-black uppercase tracking-tight text-foreground mb-6 flex items-center gap-4">
-                                <span className="h-px w-8 bg-primary"></span>
-                                Our Legacy
+            <div className="container mx-auto px-4 lg:px-8 -mt-32 relative z-30">
+                {/* Chronicles Section */}
+                <section className="bg-background border border-border p-12 md:p-20 shadow-2xl mb-24">
+                    <div className="max-w-4xl mx-auto">
+                        <div className="text-center mb-16">
+                            <span className="text-primary font-heading font-bold uppercase tracking-[0.3em] text-sm mb-4 block">Our History</span>
+                            <h2 className="text-4xl md:text-6xl font-heading font-black uppercase tracking-tight text-foreground">
+                                Chronicles of <span className="text-primary italic">Shinbukan</span>
                             </h2>
-                            <div className="space-y-6 text-muted-foreground leading-relaxed text-lg">
+                        </div>
+                        <Timeline />
+                    </div>
+                </section>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-start">
+                    {/* Story Side */}
+                    <div className="space-y-20">
+                        <section className="space-y-8">
+                            <h2 className="text-4xl font-heading font-black uppercase tracking-tight text-foreground flex items-center gap-4">
+                                <span className="h-px w-12 bg-primary"></span>
+                                The Legacy
+                            </h2>
+                            <div className="space-y-6 text-muted-foreground leading-relaxed text-xl font-medium">
                                 <p>
-                                    Tracing our roots back to the traditional masters of Shito-Ryu, we preserve the authenticity and spirit of the art under the <span className="text-foreground font-bold italic text-primary">Karate Do Shito-Ryu Shinbukan Association</span>.
+                                    Tracing our roots back to the traditional masters of Shito-Ryu, we preserve the authenticity and spirit of the art under the <span className="text-foreground font-black italic text-primary">Karate Do Shito-Ryu Shinbukan Association</span>.
                                 </p>
                                 <p>
-                                    Founded on the principles of discipline, respect, and technical excellence, our dojo serves as a bridge between ancient Okinawan traditions and modern martial science.
+                                    Our dojo is not just a training hall; it is a sanctuary for personal growth and technical excellence. We bridge the gap between ancient Okinawan wisdom and modern martial science.
                                 </p>
                             </div>
                         </section>
 
-                        <section className="bg-primary/5 border-l-4 border-primary p-12 relative overflow-hidden">
-                            <div className="absolute top-0 right-0 p-8 opacity-10 font-heading text-9xl text-primary pointer-events-none select-none">
+                        <section className="bg-muted/10 border border-border p-12 relative overflow-hidden">
+                            <h2 className="text-2xl font-heading font-black uppercase tracking-widest text-primary mb-12">The Dojo Kun</h2>
+                            <div className="space-y-8">
+                                {dojoKun.map((line, i) => (
+                                    <div key={i} className="group cursor-default">
+                                        <div className="flex items-center gap-6 mb-2">
+                                            <span className="text-primary font-heading font-black text-2xl">0{i + 1}</span>
+                                            <h3 className="text-lg font-black uppercase tracking-wide text-foreground group-hover:text-primary transition-colors">{line.text}</h3>
+                                        </div>
+                                        <p className="text-sm text-muted-foreground pl-12 max-w-md italic opacity-70 group-hover:opacity-100 transition-opacity">
+                                            {line.desc}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="absolute bottom-0 right-0 p-8 opacity-5 font-heading text-9xl text-primary pointer-events-none select-none">
                                 空手
                             </div>
-                            <h2 className="text-2xl font-heading font-black uppercase tracking-widest text-foreground mb-10">Dojo Kun</h2>
-                            <ul className="space-y-6">
-                                {dojoKun.map((line, i) => (
-                                    <motion.li
-                                        key={i}
-                                        initial={{ opacity: 0, x: -10 }}
-                                        whileInView={{ opacity: 1, x: 0 }}
-                                        viewport={{ once: true }}
-                                        transition={{ delay: i * 0.1 }}
-                                        className="flex items-start gap-4"
-                                    >
-                                        <span className="text-primary font-heading font-black text-xl leading-none">0{i + 1}.</span>
-                                        <span className="text-foreground font-bold uppercase tracking-wide text-sm md:text-base leading-tight">
-                                            {line}
-                                        </span>
-                                    </motion.li>
-                                ))}
-                            </ul>
                         </section>
                     </div>
 
-                    {/* Master Side */}
-                    <div className="space-y-12">
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            whileInView={{ opacity: 1, scale: 1 }}
-                            className="relative aspect-[3/4] bg-muted/30 border border-border group overflow-hidden"
-                        >
-                            <Image
-                                src="/images/hero_silhouette.png" // Reusing silhouette or specific master image
-                                alt="Chief Instructor"
-                                fill
-                                className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
-                            />
-                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background to-transparent p-12">
-                                <h3 className="text-4xl font-heading font-black uppercase text-foreground leading-none">Kyoshi Miyagi</h3>
-                                <p className="text-primary font-heading font-bold uppercase tracking-widest text-xs mt-2">Chief Instructor • 8th Dan</p>
-                            </div>
-                        </motion.div>
-
-                        <section className="space-y-6">
-                            <h2 className="text-3xl font-heading font-black uppercase tracking-tight text-foreground mb-6 flex items-center gap-4">
-                                <span className="h-px w-8 bg-primary"></span>
-                                The Master's Path
+                    {/* Roster Side */}
+                    <div className="space-y-20">
+                        <section className="space-y-12">
+                            <h2 className="text-4xl font-heading font-black uppercase tracking-tight text-foreground flex items-center gap-4">
+                                <span className="h-px w-12 bg-primary"></span>
+                                The Masters
                             </h2>
-                            <p className="text-muted-foreground leading-relaxed italic border-l-2 border-border pl-6">
-                                "Karate is not about defeating others. It is about defeating the weaknesses within yourself. The journey never ends; it only deepens."
-                            </p>
-                            <p className="text-muted-foreground leading-relaxed">
-                                Kyoshi Miyagi has dedicated over 40 years to the study and teaching of Shito-Ryu. His approach balances the lethal efficiency of traditional bunkai with the character-building essence of Budo.
-                            </p>
+
+                            <div className="grid grid-cols-1 gap-12">
+                                {senseis.map((sensei) => (
+                                    <div key={sensei.id} className="group">
+                                        <div className="relative aspect-[16/9] overflow-hidden border border-border bg-muted/20 mb-6">
+                                            {sensei.image ? (
+                                                <Image
+                                                    src={sensei.image}
+                                                    alt={sensei.name || "Sensei"}
+                                                    fill
+                                                    className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
+                                                />
+                                            ) : (
+                                                <div className="absolute inset-0 flex items-center justify-center p-12">
+                                                    <Users className="w-24 h-24 text-muted-foreground opacity-20" />
+                                                </div>
+                                            )}
+                                            <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-60" />
+                                            <div className="absolute bottom-6 left-8">
+                                                <h3 className="text-3xl font-heading font-black uppercase text-foreground leading-none">{sensei.name}</h3>
+                                                <p className="text-primary font-heading font-bold uppercase tracking-widest text-[10px] mt-2">Chief Instructor • Certified Shinbukan</p>
+                                            </div>
+                                        </div>
+                                        <p className="text-muted-foreground leading-relaxed italic border-l-2 border-primary pl-6">
+                                            {sensei.studentProfile?.bio || "Dedicated to the transmission of traditional Shito-Ryu karate and the development of student character."}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
                         </section>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="p-6 bg-zinc-900/5 dark:bg-zinc-900/50 border border-border">
-                                <h4 className="font-heading font-bold uppercase text-primary text-xs mb-2">Certification</h4>
-                                <p className="text-[10px] font-bold uppercase text-muted-foreground">Certified by Grandmaster Shinbukan International</p>
-                            </div>
-                            <div className="p-6 bg-zinc-900/5 dark:bg-zinc-900/50 border border-border">
-                                <h4 className="font-heading font-bold uppercase text-primary text-xs mb-2">Experience</h4>
-                                <p className="text-[10px] font-bold uppercase text-muted-foreground">40+ Years of Traditional Instruction</p>
-                            </div>
-                        </div>
+                        <section className="p-12 border-2 border-dashed border-border text-center">
+                            <Award className="w-12 h-12 text-primary mx-auto mb-6 opacity-30" />
+                            <h3 className="text-xl font-heading font-black uppercase text-foreground mb-4">Official Affiliation</h3>
+                            <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+                                Our instructors are certified by the Global Shinbukan Shito-Ryu Council, ensuring a direct lineage to the traditional masters.
+                            </p>
+                        </section>
                     </div>
                 </div>
             </div>

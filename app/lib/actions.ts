@@ -80,3 +80,37 @@ export async function createPost(formData: FormData) {
     revalidatePath('/news');
     return post;
 }
+
+export async function createAchievement(data: { title: string; studentId: string; description?: string }) {
+    const session = await auth();
+    if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'SENSEI')) {
+        throw new Error("Unauthorized");
+    }
+
+    const achievement = await prisma.achievement.create({
+        data: {
+            title: data.title,
+            studentId: data.studentId,
+            description: data.description || "",
+        }
+    });
+
+    revalidatePath('/admin/students');
+    revalidatePath('/student/dashboard');
+    return achievement;
+}
+
+export async function authenticate(
+    prevState: string | undefined,
+    formData: FormData,
+) {
+    try {
+        const { signIn } = await import("@/auth");
+        await signIn('credentials', formData);
+    } catch (error: any) {
+        if (error.type === 'CredentialsSignin') {
+            return 'Invalid credentials.';
+        }
+        throw error;
+    }
+}
