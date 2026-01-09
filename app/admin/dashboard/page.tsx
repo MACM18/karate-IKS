@@ -35,8 +35,9 @@ export default async function AdminDashboard() {
     ]);
 
     // Fetch recent items for previews
-    const [recentApplications, latestNews, latestGallery] = await Promise.all([
+    const [ongoingApplications, latestNews, latestGallery, classSchedules] = await Promise.all([
         prisma.examApplication.findMany({
+            where: { status: "PENDING" },
             take: 5,
             orderBy: { createdAt: 'desc' },
             include: {
@@ -45,10 +46,13 @@ export default async function AdminDashboard() {
             }
         }),
         prisma.post.findFirst({ orderBy: { createdAt: 'desc' } }),
-        prisma.galleryItem.findFirst({ orderBy: { createdAt: 'desc' } })
+        prisma.galleryItem.findFirst({ orderBy: { createdAt: 'desc' } }),
+        prisma.classSchedule.findMany({
+            include: { _count: { select: { students: true } } }
+        })
     ]);
 
-    const exportData = recentApplications.map((app: any) => ({
+    const exportData = ongoingApplications.map((app: any) => ({
         ID: app.id,
         Student: app.student.user.name,
         Exam: app.template.title,
@@ -72,6 +76,9 @@ export default async function AdminDashboard() {
                     <p className="text-zinc-500 mt-2 font-medium">Strategic overview and school management.</p>
                 </div>
                 <div className="flex gap-4">
+                    <Link href="/admin/attendance" className="bg-zinc-900 border border-zinc-800 text-white px-6 py-3 text-xs font-black uppercase tracking-widest hover:border-primary transition-all flex items-center gap-2">
+                        Attendance Command <Clock size={16} />
+                    </Link>
                     <Link href="/admin/exams" className="bg-primary text-white px-6 py-3 text-xs font-black uppercase tracking-widest hover:bg-red-700 transition-all flex items-center gap-2">
                         Forge New Exam <ArrowUpRight size={16} />
                     </Link>
@@ -100,13 +107,13 @@ export default async function AdminDashboard() {
                     <div className="flex items-center justify-between">
                         <h2 className="text-sm font-black uppercase tracking-[0.3em] text-zinc-500 flex items-center gap-3">
                             <span className="h-px w-8 bg-zinc-800"></span>
-                            Recent Intelligence
+                            Ongoing Applications
                         </h2>
                         <DataExport
                             data={exportData}
-                            filename="karate_iks_recent_applications"
+                            filename="karate_iks_pending_applications"
                             columns={['Student', 'Exam', 'Status', 'Payment', 'Date']}
-                            title="Recent Exam Applications Report"
+                            title="Pending Exam Applications Report"
                         />
                     </div>
 
@@ -117,33 +124,70 @@ export default async function AdminDashboard() {
                                     <th className="p-4 text-[10px] font-black uppercase tracking-widest text-zinc-500">Student</th>
                                     <th className="p-4 text-[10px] font-black uppercase tracking-widest text-zinc-500">Exam</th>
                                     <th className="p-4 text-[10px] font-black uppercase tracking-widest text-zinc-500">Status</th>
-                                    <th className="p-4 text-[10px] font-black uppercase tracking-widest text-zinc-500">Action</th>
+                                    <th className="p-4 text-[10px] font-black uppercase tracking-widest text-zinc-500 text-right">Action</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-zinc-800">
-                                {recentApplications.map((app: any) => (
-                                    <tr key={app.id} className="hover:bg-white/5 transition-colors">
+                                {ongoingApplications.map((app: any) => (
+                                    <tr key={app.id} className="hover:bg-white/5 transition-colors group">
                                         <td className="p-4">
                                             <div className="text-xs font-bold text-white">{app.student.user.name}</div>
                                             <div className="text-[10px] text-zinc-600 uppercase font-black">{app.student.user.email}</div>
                                         </td>
                                         <td className="p-4 text-xs font-medium text-zinc-400">{app.template.title}</td>
                                         <td className="p-4">
-                                            <span className={`text-[10px] font-black px-2 py-1 rounded-sm uppercase tracking-tighter ${app.status === 'APPROVED' ? 'bg-emerald-500/10 text-emerald-500' :
-                                                app.status === 'PENDING' ? 'bg-amber-500/10 text-amber-500' : 'bg-rose-500/10 text-rose-500'
-                                                }`}>
+                                            <span className={`text-[10px] font-black px-2 py-1 rounded-sm uppercase tracking-tighter bg-amber-500/10 text-amber-500`}>
                                                 {app.status}
                                             </span>
                                         </td>
-                                        <td className="p-4">
-                                            <Link href={`/admin/exams/review?id=${app.id}`} className="text-primary hover:underline text-[10px] font-black uppercase tracking-widest">
+                                        <td className="p-4 text-right">
+                                            <Link href={`/admin/exams/review?id=${app.id}`} className="text-primary hover:underline text-[10px] font-black uppercase tracking-widest bg-zinc-800 px-3 py-1 border border-zinc-700 rounded-sm">
                                                 Review
                                             </Link>
                                         </td>
                                     </tr>
                                 ))}
+
+                                {ongoingApplications.length === 0 && (
+                                    <tr>
+                                        <td colSpan={4} className="p-8 text-center text-xs text-zinc-600 italic">No pending applications at HQ.</td>
+                                    </tr>
+                                )}
                             </tbody>
                         </table>
+                    </div>
+
+                    {/* Class Density Widget */}
+                    <div className="space-y-6">
+                        <h2 className="text-sm font-black uppercase tracking-[0.3em] text-zinc-500 flex items-center gap-3">
+                            <span className="h-px w-8 bg-zinc-800"></span>
+                            Class Density Intel
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {classSchedules.map((schedule: any) => {
+                                const percentage = Math.round((schedule._count.students / schedule.capacity) * 100);
+                                return (
+                                    <div key={schedule.id} className="bg-zinc-900 border border-zinc-800 p-5 space-y-4">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <h4 className="text-xs font-black uppercase text-white tracking-widest">{schedule.name}</h4>
+                                                <p className="text-[10px] text-zinc-600 font-bold uppercase">{schedule.day} @ {schedule.time}</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="text-xl font-heading font-black text-white">{schedule._count.students}</div>
+                                                <div className="text-[10px] text-zinc-600 uppercase font-black">/ {schedule.capacity}</div>
+                                            </div>
+                                        </div>
+                                        <div className="h-1 w-full bg-zinc-800 rounded-full overflow-hidden">
+                                            <div
+                                                className={`h-full transition-all duration-1000 ${percentage > 90 ? 'bg-red-500' : percentage > 70 ? 'bg-amber-500' : 'bg-primary'}`}
+                                                style={{ width: `${Math.min(percentage, 100)}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </div>
 
                     {/* Dojo Intel Widgets */}

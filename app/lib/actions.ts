@@ -402,6 +402,34 @@ export async function updateStudentProfile(formData: FormData) {
     revalidatePath('/student/dashboard');
 }
 
+export async function toggleStudentActiveStatus(studentId: string, isActive: boolean) {
+    const session = await auth();
+    if (!session || session.user.role !== 'ADMIN') {
+        throw new Error("Unauthorized");
+    }
+
+    await prisma.studentProfile.update({
+        where: { id: studentId },
+        data: { isActive }
+    });
+
+    revalidatePath('/admin/students');
+}
+
+export async function updateStudentClass(studentId: string, classId: string) {
+    const session = await auth();
+    if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'SENSEI')) {
+        throw new Error("Unauthorized");
+    }
+
+    await prisma.studentProfile.update({
+        where: { id: studentId },
+        data: { classId: classId || null }
+    });
+
+    revalidatePath('/admin/students');
+}
+
 export async function authenticate(
     prevState: string | undefined,
     formData: FormData,

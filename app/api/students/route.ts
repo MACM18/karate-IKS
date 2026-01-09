@@ -51,32 +51,38 @@ export async function POST(req: Request) {
         // Transaction to create User and Profile
         const result = await prisma.$transaction(async (tx) => {
             // 1. Create User
-            // Note: Password handling should be robust (hashing). Here we set a default.
             const user = await tx.user.create({
                 data: {
                     name: validatedData.name,
                     email: validatedData.email,
                     role: 'STUDENT',
-                    // passwordHash: await bcrypt.hash('welcome123', 10), // In real app
                 }
             });
 
-            // 2. Get Rank ID (assuming ranks exist, otherwise find/create)
-            // For simplicity, we search for the rank by name
-            let rank = await tx.rank.findFirst({ where: { name: validatedData.rank } });
-            if (!rank) {
-                // Fallback or error. For this implementation plan, allow null or handle grace.
-                // We can optionally seed ranks if they don't exist.
-            }
+            // 2. Generate Admission Number: KS-[Year]-[Count+1]
+            const year = new Date().getFullYear();
+            const count = await tx.studentProfile.count({
+                where: {
+                    admissionNumber: {
+                        startsWith: `KS-${year}`
+                    }
+                }
+            });
+            const admissionNumber = `KS-${year}-${(count + 1).toString().padStart(3, '0')}`;
 
-            // 3. Create Profile
+            // 3. Get Rank ID
+            let rank = await tx.rank.findFirst({ where: { name: validatedData.rank } });
+
+            // 4. Create Profile
             const profile = await tx.studentProfile.create({
                 data: {
                     userId: user.id,
+                    admissionNumber,
                     phone: validatedData.phone ? encrypt(validatedData.phone) : null,
                     emergencyContact: validatedData.emergencyContact ? encrypt(validatedData.emergencyContact) : null,
                     dateOfBirth: validatedData.dateOfBirth ? new Date(validatedData.dateOfBirth) : null,
                     currentRankId: rank?.id,
+                    classId: (validatedData as any).classId || null,
                 }
             });
 

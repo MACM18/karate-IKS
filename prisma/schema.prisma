@@ -43,8 +43,14 @@ model StudentProfile {
   dateOfBirth      DateTime?
   bio              String?   // For instructor bios or expanded student profiles
   
+  admissionNumber  String?   @unique // Generated: e.g., KS-2026-001
+  isActive         Boolean   @default(true)
+  
   currentRankId    String?
   currentRank      Rank?    @relation(fields: [currentRankId], references: [id])
+  
+  classId          String?
+  classSchedule    ClassSchedule? @relation(fields: [classId], references: [id])
   
   attendance       Attendance[]
   promotions       StudentPromotion[]
@@ -90,6 +96,19 @@ model Attendance {
   classType   String   // e.g., "Kids", "Adults", "Advanced"
   
   checkedInBy String?  // ID of Sensei who checked them in
+}
+
+model ClassSchedule {
+  id          String   @id @default(cuid())
+  name        String   // e.g., "Kids Monday 5PM"
+  day         String   // e.g., "Monday"
+  time        String   // e.g., "17:00"
+  capacity    Int      @default(20)
+  
+  students    StudentProfile[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 // Content Management (News/Feed)

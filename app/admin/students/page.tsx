@@ -7,6 +7,7 @@ export default async function AdminStudentsPage() {
         include: {
             user: true,
             currentRank: true,
+            classSchedule: true,
             attendance: {
                 orderBy: { date: 'desc' },
                 take: 1
@@ -15,13 +16,16 @@ export default async function AdminStudentsPage() {
         orderBy: { createdAt: 'desc' }
     });
 
-    const students: Student[] = rawStudents.map(profile => ({
-        id: profile.id, // Use Profile ID for linked data like Achievements
+    const students: any[] = rawStudents.map(profile => ({
+        id: profile.id,
         name: profile.user.name || "Unknown",
         email: profile.user.email,
+        admissionNumber: profile.admissionNumber,
+        classSchedule: profile.classSchedule?.name || "Unassigned",
         rank: profile.currentRank?.name || "No Rank",
         joinDate: profile.createdAt.toISOString().split('T')[0],
-        status: "active", // Logic could be improved based on last attendance
+        status: profile.isActive ? "active" : "inactive",
+        isActive: profile.isActive,
         lastAttendance: profile.attendance[0]
             ? new Date(profile.attendance[0].date).toLocaleDateString()
             : "Never"

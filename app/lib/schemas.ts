@@ -10,6 +10,7 @@ export const StudentSchema = z.object({
     dateOfBirth: z.string().datetime().optional(), // ISO String expected from frontend
     emergencyContact: z.string().min(5, "Emergency contact details required"),
     rank: RankEnum.default('White'),
+    classId: z.string().optional(),
 });
 
 export const AttendanceSchema = z.object({

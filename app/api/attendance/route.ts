@@ -21,6 +21,7 @@ export async function POST(req: Request) {
             data: {
                 studentId: validatedData.studentId,
                 classType: validatedData.classType,
+                date: body.date ? new Date(body.date) : new Date(),
                 checkedInBy: session.user.id,
             }
         });

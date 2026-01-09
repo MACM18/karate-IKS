@@ -9,6 +9,7 @@ export function MultiStepForm() {
     const totalSteps = 3;
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const [schedules, setSchedules] = useState<any[]>([]);
     const [formData, setFormData] = useState({
         firstName: "",
         lastName: "",
@@ -19,7 +20,17 @@ export function MultiStepForm() {
         experience: "beginner",
         goals: [],
         program: "adults",
+        classId: "",
     });
+
+    React.useEffect(() => {
+        fetch('/api/schedules')
+            .then(res => res.json())
+            .then(data => {
+                if (Array.isArray(data)) setSchedules(data);
+            })
+            .catch(err => console.error("Failed to load schedules", err));
+    }, []);
 
     const handleNext = () => {
         if (step < totalSteps) setStep(step + 1);
@@ -40,7 +51,8 @@ export function MultiStepForm() {
                 phone: formData.phone,
                 emergencyContact: formData.emergencyContact,
                 dateOfBirth: formData.dateOfBirth ? new Date(formData.dateOfBirth).toISOString() : undefined,
-                rank: "White"
+                rank: "White",
+                classId: formData.classId
             };
 
             const response = await fetch('/api/students', {
@@ -252,32 +264,36 @@ export function MultiStepForm() {
                             exit={{ opacity: 0, x: -20 }}
                             className="space-y-6"
                         >
-                            <label className="text-[10px] uppercase font-black tracking-widest text-muted-foreground block mb-4">Select Deployment Zone</label>
+                            <label className="text-[10px] uppercase font-black tracking-widest text-muted-foreground block mb-4">Select Your Training Slot</label>
                             <div className="grid grid-cols-1 gap-4">
-                                {[
-                                    { id: 'kids', title: 'Little Ninjas', age: 'AGES 4-7', desc: 'Focus, discipline, and basic motor skills.' },
-                                    { id: 'juniors', title: 'Juniors', age: 'AGES 8-15', desc: 'Self-defense, kata, and character building.' },
-                                    { id: 'adults', title: 'Adults & Teens', age: '16+ SPECIALIZED', desc: 'Fitness, traditional Shito-Ryu, and sparring.' }
-                                ].map((prog) => (
+                                {schedules.map((prog) => (
                                     <button
                                         key={prog.id}
                                         type="button"
-                                        onClick={() => setFormData({ ...formData, program: prog.id })}
-                                        className={`p-6 border rounded-sm flex flex-col md:flex-row md:items-center justify-between gap-4 text-left transition-all duration-300 ${formData.program === prog.id
+                                        onClick={() => setFormData({ ...formData, classId: prog.id })}
+                                        className={`p-6 border rounded-sm flex flex-col md:flex-row md:items-center justify-between gap-4 text-left transition-all duration-300 ${formData.classId === prog.id
                                             ? 'border-primary bg-primary/10 shadow-lg'
                                             : 'border-border bg-muted/5 hover:border-foreground/30 hover:bg-muted/10'
                                             }`}
                                     >
                                         <div>
-                                            <h3 className={`font-heading uppercase text-xl font-bold ${formData.program === prog.id ? 'text-primary' : 'text-foreground'}`}>
-                                                {prog.title}
+                                            <h3 className={`font-heading uppercase text-xl font-bold ${formData.classId === prog.id ? 'text-primary' : 'text-foreground'}`}>
+                                                {prog.name}
                                             </h3>
-                                            <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mt-1 mb-2">{prog.age}</p>
-                                            <p className="text-xs text-muted-foreground leading-relaxed max-w-sm">{prog.desc}</p>
+                                            <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mt-1 mb-2">
+                                                {prog.day} @ {prog.time}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground leading-relaxed max-w-sm">
+                                                Secure your place in the upcoming {prog.name.split(' ')[0]} rotation.
+                                            </p>
                                         </div>
-                                        {formData.program === prog.id && <Check className="text-primary hidden md:block" size={24} />}
+                                        {formData.classId === prog.id && <Check className="text-primary hidden md:block" size={24} />}
                                     </button>
                                 ))}
+
+                                {schedules.length === 0 && (
+                                    <p className="text-xs text-muted-foreground italic text-center py-8">Loading available training slots...</p>
+                                )}
                             </div>
                         </motion.div>
                     )}

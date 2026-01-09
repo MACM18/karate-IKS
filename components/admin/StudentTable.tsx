@@ -1,16 +1,19 @@
 "use client";
 
 import React, { useState } from "react";
-import { MoreHorizontal, Trophy, CheckCircle2, Loader2 } from "lucide-react";
-import { createAchievement } from "@/app/lib/actions";
+import { MoreHorizontal, Trophy, CheckCircle2, Loader2, UserX, UserCheck, Inbox } from "lucide-react";
+import { createAchievement, toggleStudentActiveStatus } from "@/app/lib/actions";
 
 export interface Student {
-    id: string; // This should be the StudentProfile ID
+    id: string;
     name: string;
     email: string;
+    admissionNumber: string;
+    classSchedule: string;
     rank: string;
     joinDate: string;
-    status: "active" | "inactive" | "suspended";
+    status: "active" | "inactive";
+    isActive: boolean;
     lastAttendance: string;
 }
 
@@ -41,44 +44,54 @@ export function StudentTable({ students }: StudentTableProps) {
         }
     };
 
+    const handleToggleStatus = async (studentId: string, currentStatus: boolean) => {
+        if (!confirm(`Are you sure you want to mark this student as ${currentStatus ? 'INACTIVE' : 'ACTIVE'}?`)) return;
+        try {
+            await toggleStudentActiveStatus(studentId, !currentStatus);
+        } catch (error) {
+            alert("Failed to update status.");
+        }
+    };
+
     return (
         <div className="w-full overflow-x-auto">
             <table className="w-full text-left border-collapse">
                 <thead>
-                    <tr className="border-b border-zinc-800 text-zinc-400 uppercase text-xs tracking-widest">
-                        <th className="py-4 px-6 font-medium">Name</th>
-                        <th className="py-4 px-6 font-medium">Rank</th>
-                        <th className="py-4 px-6 font-medium">Status</th>
-                        <th className="py-4 px-6 font-medium">Last Seen</th>
-                        <th className="py-4 px-6 font-medium text-right">Actions</th>
+                    <tr className="border-b border-zinc-900 text-zinc-500 uppercase text-[10px] tracking-[0.2em] bg-black/40">
+                        <th className="py-4 px-6 font-black">Personnel / ID</th>
+                        <th className="py-4 px-6 font-black">Rank</th>
+                        <th className="py-4 px-6 font-black">Deployment (Class)</th>
+                        <th className="py-4 px-6 font-black">Status</th>
+                        <th className="py-4 px-6 font-black text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody className="text-zinc-300">
                     {students.map((student) => (
-                        <tr key={student.id} className="border-b border-zinc-900 hover:bg-zinc-900/50 transition-colors group">
+                        <tr key={student.id} className={`border-b border-zinc-900 hover:bg-white/5 transition-colors group ${!student.isActive ? 'opacity-50' : ''}`}>
                             <td className="py-4 px-6">
-                                <div className="font-bold text-white">{student.name}</div>
-                                <div className="text-xs text-zinc-500">{student.email}</div>
+                                <div className="font-bold text-white group-hover:text-primary transition-colors">{student.name}</div>
+                                <div className="text-[10px] text-zinc-600 font-black uppercase tracking-widest">{student.admissionNumber || "NO ADMISSION ID"}</div>
                             </td>
                             <td className="py-4 px-6">
-                                <span className="px-3 py-1 bg-zinc-800 rounded-full text-xs uppercase tracking-wide border border-zinc-700">
-                                    {student.rank}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                    <span
+                                        className="w-2 h-2 rounded-full border border-white/10"
+                                        style={{ backgroundColor: student.rank.toLowerCase() === 'black' ? '#000' : '#fff' }} // Simplified for display
+                                    />
+                                    <span className="text-xs font-bold uppercase tracking-tighter">
+                                        {student.rank}
+                                    </span>
+                                </div>
                             </td>
                             <td className="py-4 px-6">
-                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium uppercase tracking-wide
-                                ${student.status === 'active' ? 'bg-green-950/30 text-green-400 border border-green-900' : ''}
-                                ${student.status === 'suspended' ? 'bg-red-950/30 text-red-400 border border-red-900' : ''}
-                                ${student.status === 'inactive' ? 'bg-zinc-800 text-zinc-400 border border-zinc-700' : ''}
+                                <div className="text-xs font-medium text-zinc-400">{student.classSchedule}</div>
+                            </td>
+                            <td className="py-4 px-6">
+                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm text-[10px] font-black uppercase tracking-widest
+                                ${student.isActive ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border border-rose-500/20'}
                             `}>
-                                    <span className={`w-1.5 h-1.5 rounded-full ${student.status === 'active' ? 'bg-green-400' :
-                                        student.status === 'suspended' ? 'bg-red-400' : 'bg-zinc-400'
-                                        }`}></span>
-                                    {student.status}
+                                    {student.isActive ? 'Active' : 'Inactive'}
                                 </span>
-                            </td>
-                            <td className="py-4 px-6 text-sm text-zinc-500">
-                                {student.lastAttendance}
                             </td>
                             <td className="py-4 px-6 text-right">
                                 <div className="flex items-center justify-end gap-2">
@@ -88,35 +101,42 @@ export function StudentTable({ students }: StudentTableProps) {
                                                 type="text"
                                                 value={achievementTitle}
                                                 onChange={(e) => setAchievementTitle(e.target.value)}
-                                                placeholder="Achievement Title"
-                                                className="bg-zinc-800 border border-zinc-700 text-xs py-1.5 px-3 rounded text-white focus:outline-none focus:border-action"
+                                                placeholder="INTEL TITLE"
+                                                className="bg-black border border-zinc-800 text-[10px] py-1.5 px-3 font-black text-white focus:outline-none focus:border-primary uppercase tracking-widest"
                                                 autoFocus
                                             />
                                             <button
                                                 onClick={() => handleAward(student.id)}
                                                 disabled={isSubmitting || !achievementTitle}
-                                                className="p-1.5 bg-action text-white rounded hover:bg-red-700 disabled:opacity-50"
+                                                className="p-1.5 bg-primary text-white rounded-sm hover:bg-red-700 disabled:opacity-50"
                                             >
                                                 {isSubmitting ? <Loader2 className="animate-spin" size={16} /> : <CheckCircle2 size={16} />}
                                             </button>
                                             <button
                                                 onClick={() => setAwardingTo(null)}
-                                                className="text-zinc-500 hover:text-white text-xs uppercase font-bold px-2"
+                                                className="text-zinc-500 hover:text-white text-[10px] uppercase font-black px-2 tracking-widest"
                                             >
-                                                Cancel
+                                                Abort
                                             </button>
                                         </div>
                                     ) : (
                                         <>
                                             <button
                                                 onClick={() => setAwardingTo(student.id)}
-                                                className="p-2 hover:bg-zinc-800 rounded text-zinc-500 hover:text-action transition-all group-hover:scale-110"
+                                                className="p-2 hover:bg-zinc-800 rounded text-zinc-500 hover:text-primary transition-all"
                                                 title="Award Achievement"
                                             >
-                                                <Trophy size={18} />
+                                                <Trophy size={16} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleToggleStatus(student.id, student.isActive)}
+                                                className={`p-2 hover:bg-zinc-800 rounded transition-all ${student.isActive ? 'text-zinc-500 hover:text-rose-500' : 'text-emerald-500 hover:text-emerald-400'}`}
+                                                title={student.isActive ? "Deactivate personnel" : "Reactivate personnel"}
+                                            >
+                                                {student.isActive ? <UserX size={16} /> : <UserCheck size={16} />}
                                             </button>
                                             <button className="p-2 hover:bg-zinc-800 rounded text-zinc-500 hover:text-white transition-colors">
-                                                <MoreHorizontal size={18} />
+                                                <MoreHorizontal size={16} />
                                             </button>
                                         </>
                                     )}
