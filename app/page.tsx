@@ -1,64 +1,89 @@
 import Link from "next/link";
 import { HeroSection } from "@/components/HeroSection";
-import { FeatureCard } from "@/components/FeatureCard";
-import { Shield, Zap, UserCheck } from "lucide-react";
+import { ProgramBento } from "@/components/ProgramBento";
+import { LineageSection } from "@/components/LineageSection";
+import { InstructorSpotlight } from "@/components/InstructorSpotlight";
+import { Shield, Zap, Target, ArrowRight } from "lucide-react";
 
 export default function Home() {
     return (
-        <div className="min-h-screen bg-black text-white font-sans selection:bg-action selection:text-white">
+        <div className="min-h-screen bg-background text-foreground">
             <main>
                 <HeroSection />
 
-                {/* Value Proposition Section */}
-                <section className="py-24 px-4 container mx-auto">
-                    <div className="text-center mb-16">
-                        <h2 className="text-action font-bold tracking-widest uppercase text-sm mb-2">
-                            Our Philosophy
-                        </h2>
-                        <h3 className="text-4xl md:text-5xl font-heading uppercase text-white">
-                            Why Train With Us?
-                        </h3>
-                    </div>
+                {/* Lineage & Tradition Section */}
+                <LineageSection />
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <FeatureCard
-                            icon={Shield}
-                            title="Self Defense"
-                            description="Learn practical, effective techniques to protect yourself and your loved ones in any situation."
-                        />
-                        <FeatureCard
-                            icon={UserCheck}
-                            title="Character Building"
-                            description="We cultivate respect, discipline, and perseverance. The Dojo Kun is our guide in and out of the dojo."
-                        />
-                        <FeatureCard
-                            icon={Zap}
-                            title="Physical Fitness"
-                            description="Develop explosive power, flexibility, and endurance through traditional conditioning methods."
-                        />
+                {/* Programs Bento Grid */}
+                <ProgramBento />
+
+                {/* Instructor Spotlight */}
+                <InstructorSpotlight />
+
+                {/* Impact/Stats Strip */}
+                <section className="py-16 bg-primary text-white">
+                    <div className="container mx-auto px-4 lg:px-8">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                            <div>
+                                <h3 className="text-4xl md:text-5xl font-heading font-black mb-2">350+</h3>
+                                <p className="text-sm font-bold uppercase tracking-widest opacity-80">Students</p>
+                            </div>
+                            <div>
+                                <h3 className="text-4xl md:text-5xl font-heading font-black mb-2">12</h3>
+                                <p className="text-sm font-bold uppercase tracking-widest opacity-80">Black Belts</p>
+                            </div>
+                            <div>
+                                <h3 className="text-4xl md:text-5xl font-heading font-black mb-2">15</h3>
+                                <p className="text-sm font-bold uppercase tracking-widest opacity-80">National Titles</p>
+                            </div>
+                            <div>
+                                <h3 className="text-4xl md:text-5xl font-heading font-black mb-2">10k+</h3>
+                                <p className="text-sm font-bold uppercase tracking-widest opacity-80">Training Hours</p>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
-                {/* Call to Action Strip */}
-                <section className="py-20 bg-zinc-900 border-y border-zinc-800">
-                    <div className="container mx-auto px-4 text-center">
-                        <h3 className="text-3xl font-heading uppercase mb-6">Ready to enter the Dojo?</h3>
-                        <p className="text-zinc-500 mb-8 max-w-xl mx-auto">
-                            Your first class is complimentary. Come experience the tradition and energy of our school.
-                        </p>
-                        <div className="flex justify-center">
-                            <Link
-                                href="/join"
-                                className="inline-flex items-center gap-2 px-8 py-4 bg-white text-black font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
-                            >
-                                Enter the Dojo <Shield size={16} />
-                            </Link>
+                {/* Call to Action Section */}
+                <section className="py-24 relative overflow-hidden">
+                    {/* Background decoration */}
+                    <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] -z-10 translate-x-1/2 -translate-y-1/2"></div>
+
+                    <div className="container mx-auto px-4 lg:px-8 text-center">
+                        <div className="max-w-3xl mx-auto">
+                            <Shield className="w-16 h-16 text-primary mx-auto mb-8 animate-bounce" />
+                            <h2 className="text-4xl md:text-6xl font-heading font-black uppercase text-foreground mb-6 leading-tight">
+                                Your First Step Towards <br />
+                                <span className="text-primary italic">Unstoppable Strength</span>
+                            </h2>
+                            <p className="text-xl text-muted-foreground mb-12 leading-relaxed">
+                                Join our community of dedicated practitioners. Whether you're a beginner or an advanced martial artist, there's a place for you in our Dojo.
+                            </p>
+
+                            <div className="flex flex-col sm:flex-row gap-6 justify-center">
+                                <Link
+                                    href="/join"
+                                    className="px-12 py-5 bg-primary text-white font-black uppercase tracking-widest hover:bg-red-700 transition-all shadow-[6px_6px_0px_0px_rgba(220,38,38,0.3)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 flex items-center justify-center gap-2"
+                                >
+                                    Register Now <ArrowRight size={20} />
+                                </Link>
+                                <Link
+                                    href="/programs"
+                                    className="px-12 py-5 border-2 border-border text-foreground font-black uppercase tracking-widest hover:bg-foreground hover:text-background transition-all flex items-center justify-center gap-2"
+                                >
+                                    Browse Classes <Target size={20} />
+                                </Link>
+                            </div>
+
+                            <p className="mt-12 text-sm text-muted-foreground font-bold uppercase tracking-widest">
+                                <Zap className="inline-block w-4 h-4 text-yellow-500 mr-2" />
+                                Free introductory class for all new students
+                            </p>
                         </div>
                     </div>
                 </section>
             </main>
-
-
         </div>
     );
 }
+
