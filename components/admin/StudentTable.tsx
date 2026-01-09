@@ -1,10 +1,11 @@
 "use client";
 
-import React from "react";
-import { MoreHorizontal } from "lucide-react";
+import React, { useState } from "react";
+import { MoreHorizontal, Trophy, CheckCircle2, Loader2 } from "lucide-react";
+import { createAchievement } from "@/app/lib/actions";
 
 export interface Student {
-    id: string;
+    id: string; // This should be the StudentProfile ID
     name: string;
     email: string;
     rank: string;
@@ -18,6 +19,28 @@ interface StudentTableProps {
 }
 
 export function StudentTable({ students }: StudentTableProps) {
+    const [awardingTo, setAwardingTo] = useState<string | null>(null);
+    const [achievementTitle, setAchievementTitle] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleAward = async (studentId: string) => {
+        if (!achievementTitle) return;
+        setIsSubmitting(true);
+        try {
+            await createAchievement({
+                title: achievementTitle,
+                studentId: studentId,
+            });
+            alert("Achievement awarded successfully!");
+            setAwardingTo(null);
+            setAchievementTitle("");
+        } catch (error) {
+            alert("Failed to award achievement.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     return (
         <div className="w-full overflow-x-auto">
             <table className="w-full text-left border-collapse">
@@ -58,9 +81,46 @@ export function StudentTable({ students }: StudentTableProps) {
                                 {student.lastAttendance}
                             </td>
                             <td className="py-4 px-6 text-right">
-                                <button className="p-2 hover:bg-zinc-800 rounded text-zinc-500 hover:text-white transition-colors">
-                                    <MoreHorizontal size={18} />
-                                </button>
+                                <div className="flex items-center justify-end gap-2">
+                                    {awardingTo === student.id ? (
+                                        <div className="flex items-center gap-2 animate-in slide-in-from-right-2">
+                                            <input
+                                                type="text"
+                                                value={achievementTitle}
+                                                onChange={(e) => setAchievementTitle(e.target.value)}
+                                                placeholder="Achievement Title"
+                                                className="bg-zinc-800 border border-zinc-700 text-xs py-1.5 px-3 rounded text-white focus:outline-none focus:border-action"
+                                                autoFocus
+                                            />
+                                            <button
+                                                onClick={() => handleAward(student.id)}
+                                                disabled={isSubmitting || !achievementTitle}
+                                                className="p-1.5 bg-action text-white rounded hover:bg-red-700 disabled:opacity-50"
+                                            >
+                                                {isSubmitting ? <Loader2 className="animate-spin" size={16} /> : <CheckCircle2 size={16} />}
+                                            </button>
+                                            <button
+                                                onClick={() => setAwardingTo(null)}
+                                                className="text-zinc-500 hover:text-white text-xs uppercase font-bold px-2"
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <button
+                                                onClick={() => setAwardingTo(student.id)}
+                                                className="p-2 hover:bg-zinc-800 rounded text-zinc-500 hover:text-action transition-all group-hover:scale-110"
+                                                title="Award Achievement"
+                                            >
+                                                <Trophy size={18} />
+                                            </button>
+                                            <button className="p-2 hover:bg-zinc-800 rounded text-zinc-500 hover:text-white transition-colors">
+                                                <MoreHorizontal size={18} />
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
                             </td>
                         </tr>
                     ))}
@@ -69,3 +129,4 @@ export function StudentTable({ students }: StudentTableProps) {
         </div>
     );
 }
+

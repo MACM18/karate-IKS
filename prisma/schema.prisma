@@ -23,6 +23,7 @@ model User {
   studentProfile StudentProfile?
   accounts       Account[]
   sessions       Session[]
+  posts          Post[]
 }
 
 enum Role {
@@ -38,14 +39,16 @@ model StudentProfile {
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   phone            String?
-  emergencyContact String?  // PII: Consider application-level encryption
+  emergencyContact String?  // PII: Encrypted at application level
   dateOfBirth      DateTime?
+  bio              String?   // For instructor bios or expanded student profiles
   
   currentRankId    String?
   currentRank      Rank?    @relation(fields: [currentRankId], references: [id])
   
   attendance       Attendance[]
   promotions       StudentPromotion[]
+  achievements     Achievement[]
   
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
@@ -97,8 +100,33 @@ model Post {
   published   Boolean  @default(false)
   imageUrl    String?
   
+  authorId    String?
+  author      User?    @relation(fields: [authorId], references: [id])
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model GalleryItem {
+  id          String   @id @default(cuid())
+  url         String
+  caption     String?
+  category    String?  // e.g., "Tournament", "Class", "Seminar"
+  featured    Boolean  @default(false)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Achievement {
+  id          String   @id @default(cuid())
+  title       String   // e.g., "Tournament Gold", "Student of the Year"
+  description String?
+  date        DateTime @default(now())
+  studentId   String
+  student     StudentProfile @relation(fields: [studentId], references: [id])
+
+  createdAt   DateTime @default(now())
 }
 
 enum Category {

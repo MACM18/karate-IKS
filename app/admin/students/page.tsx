@@ -16,7 +16,7 @@ export default async function AdminStudentsPage() {
     });
 
     const students: Student[] = rawStudents.map(profile => ({
-        id: profile.userId, // Use User ID for actions
+        id: profile.id, // Use Profile ID for linked data like Achievements
         name: profile.user.name || "Unknown",
         email: profile.user.email,
         rank: profile.currentRank?.name || "No Rank",

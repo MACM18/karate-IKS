@@ -23,6 +23,7 @@ export function Navbar() {
     const navLinks = [
         { name: "About", href: "/about" },
         { name: "Programs", href: "/programs" },
+        { name: "Gallery", href: "/gallery" },
         { name: "News", href: "/news" },
         { name: "Login", href: "/login" },
     ];

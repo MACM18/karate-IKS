@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/app/lib/prisma";
 import { StudentSchema } from "@/app/lib/schemas";
-import { encrypt } from "@/app/lib/encryption";
+import { encrypt, decrypt } from "@/app/lib/encryption";
 import { NextResponse } from "next/server";
 
 // GET: List all students (Admin Only)
@@ -22,7 +22,15 @@ export async function GET(req: Request) {
             },
             orderBy: { createdAt: 'desc' }
         });
-        return NextResponse.json(students);
+
+        // Decrypt PII for Admin view
+        const decryptedStudents = students.map(student => ({
+            ...student,
+            phone: student.phone ? decrypt(student.phone) : null,
+            emergencyContact: student.emergencyContact ? decrypt(student.emergencyContact) : null,
+        }));
+
+        return NextResponse.json(decryptedStudents);
     } catch (error) {
         return NextResponse.json({ error: "Failed to fetch students" }, { status: 500 });
     }
@@ -65,8 +73,8 @@ export async function POST(req: Request) {
             const profile = await tx.studentProfile.create({
                 data: {
                     userId: user.id,
-                    phone: validatedData.phone,
-                    emergencyContact: encrypt(validatedData.emergencyContact),
+                    phone: validatedData.phone ? encrypt(validatedData.phone) : null,
+                    emergencyContact: validatedData.emergencyContact ? encrypt(validatedData.emergencyContact) : null,
                     dateOfBirth: validatedData.dateOfBirth ? new Date(validatedData.dateOfBirth) : null,
                     currentRankId: rank?.id,
                 }
