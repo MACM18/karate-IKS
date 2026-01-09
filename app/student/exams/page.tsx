@@ -17,9 +17,11 @@ export default async function StudentExamsPage({ searchParams }: { searchParams:
 
     // If an ID is provided, show the application form
     if (searchParams.id) {
-        const template = await prisma.examTemplate.findUnique({
+        const templateData = await prisma.examTemplate.findUnique({
             where: { id: searchParams.id }
         });
+
+        const template = templateData as any;
 
         if (!template) redirect("/student/exams");
 
@@ -32,7 +34,7 @@ export default async function StudentExamsPage({ searchParams }: { searchParams:
     }
 
     // List available exams and my applications
-    const templates = await prisma.examTemplate.findMany({
+    const templatesFetch = await prisma.examTemplate.findMany({
         where: {
             isActive: true,
             openDate: { lte: new Date() }
@@ -40,11 +42,15 @@ export default async function StudentExamsPage({ searchParams }: { searchParams:
         orderBy: { createdAt: "desc" }
     });
 
-    const myApplications = await prisma.examApplication.findMany({
+    const templates = templatesFetch as any[];
+
+    const myApplicationsFetch = await prisma.examApplication.findMany({
         where: { studentId: studentProfile.id },
         include: { template: true },
         orderBy: { createdAt: "desc" }
     });
+
+    const myApplications = myApplicationsFetch as any[];
 
     return (
         <div className="p-4 md:p-8 space-y-12 max-w-7xl mx-auto">

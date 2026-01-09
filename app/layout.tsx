@@ -13,6 +13,7 @@ export const metadata: Metadata = {
 };
 
 import { ThemeProvider } from "next-themes";
+import { AuthProvider } from "@/components/AuthProvider";
 
 export default function RootLayout({
     children,
@@ -22,11 +23,13 @@ export default function RootLayout({
     return (
         <html lang="en" suppressHydrationWarning>
             <body className={`${inter.variable} ${oswald.variable} antialiased`}>
-                <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-                    <Navbar />
-                    {children}
-                    <Footer />
-                </ThemeProvider>
+                <AuthProvider>
+                    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+                        <Navbar />
+                        {children}
+                        <Footer />
+                    </ThemeProvider>
+                </AuthProvider>
             </body>
         </html>
     );

@@ -4,6 +4,7 @@ import { prisma } from "@/app/lib/prisma";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 import { uploadFile } from "@/app/lib/storage";
+import { encrypt } from "@/app/lib/encryption";
 
 export async function createGalleryItem(formData: FormData) {
     const session = await auth();
@@ -316,6 +317,90 @@ export async function updateApplicationStatus(applicationId: string, status: 'AP
     return application;
 }
 
+
+export async function markSelfAttendance(classType: string) {
+    const session = await auth();
+    if (!session || !session.user) {
+        throw new Error("Unauthorized");
+    }
+
+    const studentProfile = await prisma.studentProfile.findUnique({
+        where: { userId: session.user.id }
+    });
+
+    if (!studentProfile) throw new Error("Student profile not found");
+
+    // Check if already checked in today for this class type to prevent duplicates
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const existing = await prisma.attendance.findFirst({
+        where: {
+            studentId: studentProfile.id,
+            classType,
+            date: {
+                gte: today
+            }
+        }
+    });
+
+    if (existing) {
+        throw new Error("Already checked in for this class today.");
+    }
+
+    await prisma.attendance.create({
+        data: {
+            studentId: studentProfile.id,
+            classType,
+            date: new Date(),
+        }
+    });
+
+    revalidatePath('/student/dashboard');
+}
+
+export async function updateStudentProfile(formData: FormData) {
+    const session = await auth();
+    if (!session || !session.user) {
+        throw new Error("Unauthorized");
+    }
+
+    const bio = formData.get('bio') as string;
+    const phone = formData.get('phone') as string;
+    const emergencyContact = formData.get('emergencyContact') as string;
+    const file = formData.get('image') as File;
+
+    let finalImageUrl = session.user.image;
+
+    if (file && file.size > 0) {
+        const s3Url = await uploadFile(file, `profiles/${session.user.id}`);
+        if (s3Url) finalImageUrl = s3Url;
+    }
+
+    // Encrypt sensitive PII before saving
+    const encryptedPhone = phone ? encrypt(phone) : null;
+    const encryptedEmergency = emergencyContact ? encrypt(emergencyContact) : null;
+
+    // Update StudentProfile
+    await prisma.studentProfile.update({
+        where: { userId: session.user.id },
+        data: {
+            bio,
+            phone: encryptedPhone,
+            emergencyContact: encryptedEmergency,
+        }
+    });
+
+    // Update User image if changed
+    if (finalImageUrl !== session.user.image) {
+        await prisma.user.update({
+            where: { id: session.user.id },
+            data: { image: finalImageUrl }
+        });
+    }
+
+    revalidatePath('/student/dashboard');
+}
 
 export async function authenticate(
     prevState: string | undefined,

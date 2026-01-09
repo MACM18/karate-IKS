@@ -6,8 +6,11 @@ import { Menu, X, Shield } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { ThemeSwitcher } from "./ThemeSwitcher";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSession } from "next-auth/react";
+import { UserAccountProfile } from "./UserAccountProfile";
 
 export function Navbar() {
+    const { data: session, status } = useSession();
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const pathname = usePathname();
@@ -25,8 +28,12 @@ export function Navbar() {
         { name: "Programs", href: "/programs" },
         { name: "Gallery", href: "/gallery" },
         { name: "News", href: "/news" },
-        { name: "Login", href: "/login" },
     ];
+
+    // Don't show login if already authenticated
+    if (!session) {
+        navLinks.push({ name: "Login", href: "/login" });
+    }
 
     const isActive = (path: string) => pathname === path;
 
@@ -71,12 +78,20 @@ export function Navbar() {
 
                     <div className="flex items-center gap-4">
                         <ThemeSwitcher />
-                        <Link
-                            href="/join"
-                            className="px-6 py-2.5 bg-primary text-white text-xs font-black uppercase tracking-[0.2em] hover:bg-red-700 transition-all duration-300 skew-x-[-12deg] shadow-[4px_4px_0px_0px_rgba(220,38,38,0.3)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"
-                        >
-                            <span className="skew-x-[12deg] inline-block">Join Dojo</span>
-                        </Link>
+
+                        {session ? (
+                            <UserAccountProfile
+                                user={session.user as any}
+                                rank={null} // We'll need a better way to fetch rank client-side if needed, for now null
+                            />
+                        ) : (
+                            <Link
+                                href="/join"
+                                className="px-6 py-2.5 bg-primary text-white text-xs font-black uppercase tracking-[0.2em] hover:bg-red-700 transition-all duration-300 skew-x-[-12deg] shadow-[4px_4px_0px_0px_rgba(220,38,38,0.3)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"
+                            >
+                                <span className="skew-x-[12deg] inline-block">Join Dojo</span>
+                            </Link>
+                        )}
                     </div>
                 </div>
 
@@ -113,13 +128,15 @@ export function Navbar() {
                                     {link.name}
                                 </Link>
                             ))}
-                            <Link
-                                href="/join"
-                                onClick={() => setIsOpen(false)}
-                                className="mt-4 py-5 bg-primary text-white text-center text-sm font-black uppercase tracking-widest hover:bg-red-700 rounded-sm"
-                            >
-                                Enter the Dojo
-                            </Link>
+                            {!session && (
+                                <Link
+                                    href="/join"
+                                    onClick={() => setIsOpen(false)}
+                                    className="mt-4 py-5 bg-primary text-white text-center text-sm font-black uppercase tracking-widest hover:bg-red-700 rounded-sm"
+                                >
+                                    Enter the Dojo
+                                </Link>
+                            )}
                         </div>
                     </motion.div>
                 )}
