@@ -74,7 +74,7 @@ export default async function CertificatesPage() {
                     </h2>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {profile.promotions.map((promo) => (
+                        {profile.promotions.map((promo: any) => (
                             <CertificateCard
                                 key={promo.id}
                                 rank={promo.rank.name}

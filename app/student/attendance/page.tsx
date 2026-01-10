@@ -52,7 +52,7 @@ export default async function AttendancePage() {
             attendance={profile.attendance.map(a => ({
                 id: a.id,
                 date: a.date.toISOString(),
-                type: a.type
+                type: a.classType
             }))}
             stats={{
                 totalClasses,
@@ -60,7 +60,7 @@ export default async function AttendancePage() {
                 streak,
                 lastClass: lastClass ? {
                     date: lastClass.date.toISOString(),
-                    type: lastClass.type
+                    type: lastClass.classType
                 } : null
             }}
         />

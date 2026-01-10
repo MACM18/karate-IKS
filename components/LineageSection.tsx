@@ -5,10 +5,10 @@ import { History, Globe, Shield } from "lucide-react";
 
 export function LineageSection() {
   return (
-    <section className='py-24 bg-zinc-900 border-y border-zinc-800 overflow-hidden relative'>
+    <section className='overflow-hidden relative'>
       {/* Decorative background text */}
-      <div className='absolute top-0 left-0 w-full h-full flex items-center justify-center opacity-[0.02] pointer-events-none select-none overflow-hidden'>
-        <span className='text-[20rem] font-heading font-black uppercase whitespace-nowrap text-white'>
+      <div className='absolute top-0 left-0 w-full h-full flex items-center justify-center opacity-[0.03] pointer-events-none select-none overflow-hidden'>
+        <span className='text-[20rem] font-heading font-black uppercase whitespace-nowrap text-foreground'>
           SHINBUKAN
         </span>
       </div>
@@ -24,12 +24,12 @@ export function LineageSection() {
             <span className='text-primary font-heading font-bold uppercase tracking-[0.3em] text-sm mb-4 block'>
               Our Heritage
             </span>
-            <h2 className='text-4xl md:text-5xl font-heading font-black uppercase text-white mb-8 leading-tight'>
+            <h2 className='text-4xl md:text-5xl font-heading font-black uppercase text-foreground mb-8 leading-tight'>
               The Legacy of <br />
               <span className='text-primary italic'>Shito-Ryu Shinbukan</span>
             </h2>
 
-            <div className='space-y-6 text-zinc-400 leading-relaxed text-lg'>
+            <div className='space-y-6 text-muted-foreground leading-relaxed text-lg'>
               <p>
                 Founded on the principles of discipline, respect, and technical
                 precision, our association traces its lineage back to the
@@ -46,24 +46,24 @@ export function LineageSection() {
             <div className='grid grid-cols-1 sm:grid-cols-3 gap-8 mt-12'>
               <div className='flex flex-col gap-2'>
                 <History className='text-primary w-8 h-8' />
-                <p className='font-heading font-bold uppercase text-xs tracking-widest text-zinc-300'>
+                <p className='font-heading font-bold uppercase text-xs tracking-widest text-muted-foreground'>
                   Established
                 </p>
-                <p className='text-2xl font-black text-white'>1988</p>
+                <p className='text-2xl font-black text-foreground'>1988</p>
               </div>
               <div className='flex flex-col gap-2'>
                 <Globe className='text-primary w-8 h-8' />
-                <p className='font-heading font-bold uppercase text-xs tracking-widest text-zinc-300'>
+                <p className='font-heading font-bold uppercase text-xs tracking-widest text-muted-foreground'>
                   Global Dojos
                 </p>
-                <p className='text-2xl font-black text-white'>150+</p>
+                <p className='text-2xl font-black text-foreground'>150+</p>
               </div>
               <div className='flex flex-col gap-2'>
                 <Shield className='text-primary w-8 h-8' />
-                <p className='font-heading font-bold uppercase text-xs tracking-widest text-zinc-300'>
+                <p className='font-heading font-bold uppercase text-xs tracking-widest text-muted-foreground'>
                   Certifications
                 </p>
-                <p className='text-2xl font-black text-white'>JKF</p>
+                <p className='text-2xl font-black text-foreground'>JKF</p>
               </div>
             </div>
           </motion.div>

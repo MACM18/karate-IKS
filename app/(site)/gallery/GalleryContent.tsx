@@ -19,7 +19,7 @@ interface GalleryContentProps {
 }
 
 export default function GalleryContent({ initialItems }: GalleryContentProps) {
-    const [selectedStack, setSelectedStack] = useState<{ title: string; items: GalleryItem[] } | null>(null);
+    const [selectedStack, setSelectedStack] = useState<{ title: string; category: string; items: GalleryItem[] } | null>(null);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [filter, setFilter] = useState("All");
 
@@ -45,7 +45,7 @@ export default function GalleryContent({ initialItems }: GalleryContentProps) {
         ? stackList
         : stackList.filter(stack => stack.category === filter);
 
-    const handleStackClick = (stack: { title: string; items: GalleryItem[] }) => {
+    const handleStackClick = (stack: { title: string; category: string; items: GalleryItem[] }) => {
         setSelectedStack(stack);
         setCurrentImageIndex(0);
     };

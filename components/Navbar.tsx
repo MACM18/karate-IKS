@@ -14,6 +14,7 @@ export function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const pathname = usePathname();
+    const isDarkHeroPage = ["/about", "/programs"].includes(pathname);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -53,7 +54,7 @@ export function Navbar() {
                     <div className="bg-primary p-1.5 rounded-sm skew-x-[-10deg] group-hover:rotate-12 transition-transform duration-300">
                         <Shield size={24} className="text-white skew-x-[10deg]" />
                     </div>
-                    <span className="text-2xl font-heading font-black uppercase tracking-tighter text-foreground">
+                    <span className={`text-2xl font-heading font-black uppercase tracking-tighter ${scrolled || !isDarkHeroPage ? "text-foreground" : "text-white"}`}>
                         Karate <span className="text-primary italic">IKS</span>
                     </span>
                 </Link>
@@ -65,7 +66,11 @@ export function Navbar() {
                             <Link
                                 key={link.name}
                                 href={link.href}
-                                className={`text-sm font-bold uppercase tracking-widest transition-all duration-300 relative group ${isActive(link.href) ? "text-primary" : "text-foreground/70 hover:text-foreground"
+                                className={`text-sm font-bold uppercase tracking-widest transition-all duration-300 relative group ${isActive(link.href)
+                                    ? "text-primary"
+                                    : scrolled || !isDarkHeroPage
+                                        ? "text-foreground/70 hover:text-foreground"
+                                        : "text-white/90 hover:text-white"
                                     }`}
                             >
                                 {link.name}
@@ -99,7 +104,7 @@ export function Navbar() {
                 <div className="flex items-center gap-4 md:hidden">
                     <ThemeSwitcher />
                     <button
-                        className="text-foreground p-2"
+                        className={`p-2 ${scrolled || !isDarkHeroPage ? "text-foreground" : "text-white"}`}
                         onClick={() => setIsOpen(!isOpen)}
                     >
                         {isOpen ? <X size={28} /> : <Menu size={28} />}

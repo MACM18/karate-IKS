@@ -130,29 +130,28 @@ export function ProgramBento({ programs }: ProgramBentoProps) {
     let size = "md:col-span-1 md:row-span-1";
     const total = defaultLogic.length;
 
-    // 1 Item: Full width
+    // 1 Item: Full width hero
     if (total === 1) {
       size = "md:col-span-4 md:row-span-2";
     }
-    // 2 Items: Split
+    // 2 Items: Split perfectly (2 cols each, full height)
     else if (total === 2) {
       size = "md:col-span-2 md:row-span-2";
     }
-    // 3 Items: 1 Big, 2 Small stacked column? Or 1 Big (2 col), 2 Small (1 col each) => Need 4 cols total
+    // 3 Items: 1 Large Left (2x2), 2 Small Right Stacked (2x1 each)
     else if (total === 3) {
-      if (index === 0) size = "md:col-span-2 md:row-span-2"; // 2x2
-      else size = "md:col-span-1 md:row-span-2"; // 1x2 tall strips
+      if (index === 0) size = "md:col-span-2 md:row-span-2";
+      else size = "md:col-span-2 md:row-span-1";
     }
-    // 4 Items: 2x2 grid (each 2 cols, 1 row) OR 1 Big, 3 Small?
+    // 4 Items: 2x2 Grid (2 cols each, 4 cols total width)
     else if (total === 4) {
-      // 2x2 grid of regular cards
       size = "md:col-span-2 md:row-span-1";
     }
-    // 5+ Items: The Bento (Original Logic)
+    // 5+ Items: The Bento (Hero + Varied)
     else {
-      if (index === 0) size = "md:col-span-2 md:row-span-2";
-      else if (index === 2) size = "md:col-span-1 md:row-span-2";
-      else size = "md:col-span-1 md:row-span-1";
+      if (index === 0) size = "md:col-span-2 md:row-span-2"; // Hero
+      else if (index === 1 || index === 2) size = "md:col-span-1 md:row-span-2"; // Tall sidekicks
+      else size = "md:col-span-2 md:row-span-1"; // Wide fillers
     }
 
     const colorClass = p.color
@@ -161,9 +160,9 @@ export function ProgramBento({ programs }: ProgramBentoProps) {
 
     return {
       ...p,
-      details: p.benefits,
-      schedule: "Contact for schedule",
-      icon: IconMap[p.icon || "Shield"] || Shield,
+      details: (p as DBProgram).benefits || (p as any).details,
+      schedule: (p as any).schedule || "Contact for schedule",
+      icon: typeof p.icon === 'string' ? IconMap[p.icon] || Shield : p.icon || Shield,
       size,
       color: colorClass,
       image:
@@ -176,7 +175,7 @@ export function ProgramBento({ programs }: ProgramBentoProps) {
   const [selectedProgram, setSelectedProgram] = useState<any | null>(null);
 
   return (
-    <section className='py-24 bg-background' id='programs'>
+    <section className='w-full' id='programs'>
       <div className='container mx-auto px-4 lg:px-8'>
         <div className='flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6'>
           <div className='max-w-2xl'>

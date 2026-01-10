@@ -18,7 +18,7 @@ export function InstructorSpotlight({
   if (!instructors || instructors.length === 0) return null;
 
   return (
-    <section className='py-24 bg-background overflow-hidden'>
+    <section className='overflow-hidden'>
       <div className='container mx-auto px-4 lg:px-8'>
         <div className='text-center mb-20'>
           <motion.span
