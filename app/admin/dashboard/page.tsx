@@ -12,8 +12,10 @@ import {
     Trophy,
     Image as ImageIcon,
     PenTool,
-    Shield
+    Shield,
+    X
 } from 'lucide-react';
+import { approveMemberApplication, rejectMemberApplication } from '@/app/lib/registration-actions';
 import Link from 'next/link';
 import { DataExport } from '@/components/admin/DataExport';
 import { auth } from '@/auth';
@@ -29,18 +31,20 @@ export default async function AdminDashboard() {
         pendingAppsCount,
         totalPromotions,
         newsCount,
-        galleryCount
+        galleryCount,
+        pendingMembersCount
     ] = await Promise.all([
         prisma.studentProfile.count(),
         prisma.examTemplate.count({ where: { isActive: true } }),
         prisma.examApplication.count({ where: { status: "PENDING" } }),
         prisma.studentPromotion.count(),
         prisma.post.count(),
-        prisma.galleryItem.count()
+        prisma.galleryItem.count(),
+        prisma.memberApplication.count({ where: { status: "PENDING" } })
     ]);
 
     // Fetch recent items for previews
-    const [ongoingApplications, latestNews, latestGallery, classSchedules] = await Promise.all([
+    const [ongoingApplications, latestNews, latestGallery, classSchedules, pendingMembers] = await Promise.all([
         prisma.examApplication.findMany({
             where: { status: "PENDING" },
             take: 5,
@@ -54,6 +58,10 @@ export default async function AdminDashboard() {
         prisma.galleryItem.findFirst({ orderBy: { createdAt: 'desc' } }),
         prisma.classSchedule.findMany({
             include: { _count: { select: { students: true } } }
+        }),
+        prisma.memberApplication.findMany({
+            where: { status: "PENDING" },
+            orderBy: { createdAt: 'asc' }
         })
     ]);
 
@@ -68,8 +76,8 @@ export default async function AdminDashboard() {
 
     const stats = [
         { label: "Total Students", value: studentCount, icon: Users, trend: "+4% from last month", color: "text-blue-500" },
-        { label: "Pending Apps", value: pendingAppsCount, icon: FileText, trend: "Requires review", color: "text-rose-500" },
-        { label: "News Intel", value: newsCount, icon: PenTool, trend: "Published updates", color: "text-amber-500" },
+        { label: "Pending Exams", value: pendingAppsCount, icon: FileText, trend: "Requires review", color: "text-rose-500" },
+        { label: "New Joiners", value: pendingMembersCount, icon: Shield, trend: "Waiting approval", color: "text-purple-500" },
         { label: "Visual Intel", value: galleryCount, icon: ImageIcon, trend: "Gallery items", color: "text-emerald-500" },
     ];
 
@@ -109,10 +117,57 @@ export default async function AdminDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                 {/* Main Content Area */}
                 <div className="lg:col-span-2 space-y-8">
+                    <div className="bg-zinc-900 border border-zinc-800 p-6 space-y-4">
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-sm font-black uppercase tracking-[0.3em] text-zinc-500 flex items-center gap-3">
+                                <span className="h-px w-8 bg-zinc-800"></span>
+                                New Member Request
+                            </h2>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-600 bg-zinc-800 px-2 py-1 rounded-sm">{pendingMembers.length} PENDING</span>
+                        </div>
+
+                        <div className="space-y-2">
+                            {pendingMembers.map((app: any) => (
+                                <div key={app.id} className="flex items-center justify-between p-4 bg-black/20 border border-zinc-800 hover:border-zinc-700 transition-colors">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-500 font-bold uppercase">
+                                            {app.name.substring(0, 2)}
+                                        </div>
+                                        <div>
+                                            <div className="text-xs font-bold text-white uppercase">{app.name}</div>
+                                            <div className="text-[10px] text-zinc-500 font-mono">{app.email}</div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <form action={async () => {
+                                            "use server";
+                                            await rejectMemberApplication(app.id);
+                                        }}>
+                                            <button className="p-2 hover:bg-red-900/20 text-zinc-500 hover:text-red-500 transition-colors rounded-sm" title="Reject">
+                                                <X size={14} />
+                                            </button>
+                                        </form>
+                                        <form action={async () => {
+                                            "use server";
+                                            await approveMemberApplication(app.id);
+                                        }}>
+                                            <button className="px-4 py-2 bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-colors flex items-center gap-2 skew-x-[-10deg]">
+                                                <span className="skew-x-[10deg]">Admit</span>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            ))}
+                            {pendingMembers.length === 0 && (
+                                <p className="text-center text-xs text-zinc-600 italic py-4">No new registrations pending.</p>
+                            )}
+                        </div>
+                    </div>
+
                     <div className="flex items-center justify-between">
                         <h2 className="text-sm font-black uppercase tracking-[0.3em] text-zinc-500 flex items-center gap-3">
                             <span className="h-px w-8 bg-zinc-800"></span>
-                            Ongoing Applications
+                            Ongoing Exam Applications
                         </h2>
                         <DataExport
                             data={exportData}

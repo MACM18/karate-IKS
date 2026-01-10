@@ -25,6 +25,7 @@ import {
   adminUpdateStudentProfile,
   updateStudentPassword,
   assignStudentClass,
+  updateStudentRank,
 } from "@/app/lib/actions";
 import { TacticalModal } from "./TacticalModal";
 
@@ -73,6 +74,12 @@ export function StudentTable({ students }: StudentTableProps) {
     studentName: string;
     currentClass: string;
   } | null>(null);
+  const [rankModal, setRankModal] = useState<{
+    isOpen: boolean;
+    studentId: string;
+    studentName: string;
+    currentRank: string;
+  } | null>(null);
   const [notification, setNotification] = useState<{
     isOpen: boolean;
     title: string;
@@ -120,9 +127,8 @@ export function StudentTable({ students }: StudentTableProps) {
       setNotification({
         isOpen: true,
         title: "STATUS UPDATED",
-        message: `Personnel ${
-          statusModal.currentStatus ? "deactivated" : "reactivated"
-        } successfully.`,
+        message: `Personnel ${statusModal.currentStatus ? "deactivated" : "reactivated"
+          } successfully.`,
         severity: statusModal.currentStatus ? "warning" : "info",
       });
       setStatusModal(null);
@@ -199,11 +205,10 @@ export function StudentTable({ students }: StudentTableProps) {
               >
                 <span
                   className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm text-[10px] font-black uppercase tracking-widest
-                                ${
-                                  student.isActive
-                                    ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
-                                    : "bg-rose-500/10 text-rose-500 border border-rose-500/20"
-                                }
+                                ${student.isActive
+                      ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+                      : "bg-rose-500/10 text-rose-500 border border-rose-500/20"
+                    }
                             `}
                 >
                   {student.isActive ? "Active" : "Inactive"}
@@ -257,11 +262,10 @@ export function StudentTable({ students }: StudentTableProps) {
                             currentStatus: student.isActive,
                           })
                         }
-                        className={`p-2 hover:bg-zinc-800 rounded transition-all ${
-                          student.isActive
-                            ? "text-zinc-500 hover:text-rose-500"
-                            : "text-emerald-500 hover:text-emerald-400"
-                        }`}
+                        className={`p-2 hover:bg-zinc-800 rounded transition-all ${student.isActive
+                          ? "text-zinc-500 hover:text-rose-500"
+                          : "text-emerald-500 hover:text-emerald-400"
+                          }`}
                         title={
                           student.isActive
                             ? "Deactivate personnel"
@@ -297,6 +301,20 @@ export function StudentTable({ students }: StudentTableProps) {
                                 className='w-full px-4 py-2.5 text-left text-xs font-bold uppercase tracking-widest text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors flex items-center gap-3'
                               >
                                 <Edit size={14} /> Edit Details
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setRankModal({
+                                    isOpen: true,
+                                    studentId: student.id,
+                                    studentName: student.name,
+                                    currentRank: student.rank,
+                                  });
+                                  setOpenMenuId(null);
+                                }}
+                                className='w-full px-4 py-2.5 text-left text-xs font-bold uppercase tracking-widest text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors flex items-center gap-3'
+                              >
+                                <Trophy size={14} /> Change Rank
                               </button>
                               <button
                                 onClick={() => {
@@ -534,6 +552,30 @@ export function StudentTable({ students }: StudentTableProps) {
         </TacticalModal>
       )}
 
+      {/* Rank Change Modal */}
+      {rankModal && (
+        <TacticalModal
+          isOpen={rankModal.isOpen}
+          onClose={() => setRankModal(null)}
+          title='MANUAL RANK ADJUSTMENT'
+          severity='warning'
+        >
+          <RankChangeForm
+            studentId={rankModal.studentId}
+            currentRank={rankModal.currentRank}
+            onClose={() => setRankModal(null)}
+            onSuccess={() =>
+              setNotification({
+                isOpen: true,
+                title: "RANK UPDATED",
+                message: "Personnel rank adjusted successfully.",
+                severity: "info",
+              })
+            }
+          />
+        </TacticalModal>
+      )}
+
       {/* Status Change Confirmation Modal */}
       {statusModal && (
         <TacticalModal
@@ -570,11 +612,10 @@ export function StudentTable({ students }: StudentTableProps) {
               <button
                 onClick={handleDeactivateConfirm}
                 disabled={isSubmitting}
-                className={`px-6 py-2.5 text-white text-xs font-black uppercase tracking-widest transition-all disabled:opacity-50 ${
-                  statusModal.currentStatus
-                    ? "bg-primary hover:bg-red-700"
-                    : "bg-emerald-600 hover:bg-emerald-700"
-                }`}
+                className={`px-6 py-2.5 text-white text-xs font-black uppercase tracking-widest transition-all disabled:opacity-50 ${statusModal.currentStatus
+                  ? "bg-primary hover:bg-red-700"
+                  : "bg-emerald-600 hover:bg-emerald-700"
+                  }`}
               >
                 {isSubmitting ? "Processing..." : "Confirm"}
               </button>
@@ -705,6 +746,90 @@ function ClassAssignmentForm({
         className='w-full bg-primary text-white py-3 font-black uppercase tracking-widest hover:bg-red-700 transition-colors'
       >
         {isSubmitting ? "Assigning..." : "Confirm Assignment"}
+      </button>
+    </form>
+  );
+}
+
+function RankChangeForm({
+  studentId,
+  currentRank,
+  onClose,
+  onSuccess,
+}: {
+  studentId: string;
+  currentRank: string;
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const [ranks, setRanks] = useState<{ id: string; name: string; colorCode: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/ranks")
+      .then((res) => res.json())
+      .then((data) => {
+        setRanks(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  const handleSubmit = async (formData: FormData) => {
+    setIsSubmitting(true);
+    try {
+      await updateStudentRank(studentId, formData.get("rankId") as string);
+      onSuccess();
+      onClose();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (loading)
+    return (
+      <div className='p-4 flex justify-center'>
+        <Loader2 className='animate-spin text-zinc-500' />
+      </div>
+    );
+
+  return (
+    <form action={handleSubmit} className='space-y-4'>
+      <p className='text-zinc-500 text-xs'>
+        Manually adjusting rank for anomalous progression or correction.
+      </p>
+      <div className='space-y-2 max-h-60 overflow-y-auto'>
+        {ranks.map((r) => (
+          <label
+            key={r.id}
+            className='flex items-center justify-between p-3 border border-zinc-800 bg-black hover:border-primary/50 cursor-pointer transition-colors group'
+          >
+            <div className='flex items-center gap-3'>
+              <input
+                type='radio'
+                name='rankId'
+                value={r.id}
+                defaultChecked={r.name === currentRank}
+                className='accent-primary'
+              />
+              <div className='flex items-center gap-2'>
+                <span className="w-3 h-3 rounded-full border border-white/20" style={{ backgroundColor: r.colorCode }}></span>
+                <div className='text-xs font-black uppercase text-white group-hover:text-primary transition-colors'>
+                  {r.name}
+                </div>
+              </div>
+            </div>
+          </label>
+        ))}
+      </div>
+      <button
+        disabled={isSubmitting}
+        className='w-full bg-primary text-white py-3 font-black uppercase tracking-widest hover:bg-red-700 transition-colors'
+      >
+        {isSubmitting ? "Updating..." : "Confirm Rank"}
       </button>
     </form>
   );

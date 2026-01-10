@@ -8,8 +8,10 @@ export default async function GalleryPage() {
     orderBy: { createdAt: "desc" },
   });
 
-  const galleryItems = items.map((item: any) => ({
+  const galleryItems = items.map((item) => ({
+    id: item.id,
     url: item.url,
+    title: item.title,
     caption: item.caption || "",
     category: item.category || "General",
     featured: item.featured,

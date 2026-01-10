@@ -102,7 +102,7 @@ export function FormOverlay({ title, triggerLabel, children, open, onClose }: Fo
                                 {React.Children.map(children, child => {
                                     if (React.isValidElement(child)) {
                                         // Pass closeModal to the child if it's a form that might want to close after success
-                                        return React.cloneElement(child as any, { onSuccess: () => setIsOpen(false) });
+                                        return React.cloneElement(child as any, { onSuccess: () => handleClose() });
                                     }
                                     return child;
                                 })}

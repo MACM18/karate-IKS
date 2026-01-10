@@ -3,7 +3,7 @@
 import { prisma } from "@/app/lib/prisma";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
-import { uploadFile } from "@/app/lib/storage";
+import { uploadFile, deleteFile } from "@/app/lib/storage";
 import { encrypt } from "@/app/lib/encryption";
 import bcrypt from "bcryptjs";
 
@@ -505,7 +505,13 @@ export async function updateStudentProfile(formData: FormData) {
 
   if (file && file.size > 0) {
     const s3Url = await uploadFile(file, `profiles/${session.user.id}`);
-    if (s3Url) finalImageUrl = s3Url;
+    if (s3Url) {
+      // Delete old image if it exists and isn't null
+      if (session.user.image) {
+        await deleteFile(session.user.image);
+      }
+      finalImageUrl = s3Url;
+    }
   }
 
   // Encrypt sensitive PII before saving
@@ -820,4 +826,30 @@ export async function deleteCurriculumItem(id: string, rankId: string) {
   });
 
   revalidatePath(`/admin/curriculum/${rankId}`);
+}
+
+export async function updateStudentRank(studentId: string, rankId: string) {
+  const session = await auth();
+  if (
+    !session ||
+    (session.user.role !== "ADMIN" && session.user.role !== "SENSEI")
+  ) {
+    throw new Error("Unauthorized");
+  }
+
+  await prisma.studentProfile.update({
+    where: { id: studentId },
+    data: { currentRankId: rankId },
+  });
+
+  // Log promotion history (manual adjustment)
+  await prisma.studentPromotion.create({
+    data: {
+      studentId: studentId,
+      rankId: rankId,
+      notes: "Manual rank adjustment by Sensei",
+    },
+  });
+
+  revalidatePath("/admin/students");
 }

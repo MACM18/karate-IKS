@@ -19,15 +19,19 @@ interface ProfileSettingsFormProps {
 export function ProfileSettingsForm({ initialData }: ProfileSettingsFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [previewImage, setPreviewImage] = useState<string | null>(initialData.image);
+    const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
     const handleSubmit = async (formData: FormData) => {
         setIsSubmitting(true);
+        setFeedback(null);
         try {
             await updateStudentProfile(formData);
-            alert("Profile updated successfully");
+            setFeedback({ type: 'success', message: 'Profile updated successfully' });
+            // Auto hide after 3s
+            setTimeout(() => setFeedback(null), 3000);
         } catch (error) {
             console.error(error);
-            alert("Failed to update profile");
+            setFeedback({ type: 'error', message: 'Failed to update profile' });
         } finally {
             setIsSubmitting(false);
         }
@@ -42,7 +46,23 @@ export function ProfileSettingsForm({ initialData }: ProfileSettingsFormProps) {
     };
 
     return (
-        <form action={handleSubmit} className="space-y-12">
+        <form action={handleSubmit} className="space-y-12 relative">
+            {/* Feedback Toast */}
+            {feedback && (
+                <div className={`fixed bottom-8 right-8 z-50 px-6 py-4 rounded bg-zinc-900 border-l-4 shadow-2xl animate-in slide-in-from-bottom duration-300 ${feedback.type === 'success' ? 'border-primary' : 'border-red-500'
+                    }`}>
+                    <div className="flex items-center gap-3">
+                        {feedback.type === 'success' ? (
+                            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                        ) : (
+                            <div className="w-2 h-2 rounded-full bg-red-500" />
+                        )}
+                        <span className={`text-xs font-black uppercase tracking-widest ${feedback.type === 'success' ? 'text-white' : 'text-zinc-300'}`}>
+                            {feedback.message}
+                        </span>
+                    </div>
+                </div>
+            )}
 
             {/* Identity Section */}
             <div className="bg-zinc-900/30 border border-zinc-800 p-8 rounded-2xl relative overflow-hidden group hover:border-zinc-700 transition-all">
