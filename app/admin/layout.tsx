@@ -175,8 +175,17 @@ export default function AdminLayout({
 
         <div className='p-6 border-t border-zinc-900 space-y-2'>
           <Link
+            href='/'
+            className='flex items-center gap-4 px-4 py-3 text-zinc-600 hover:text-white transition-colors group'
+          >
+            <LayoutDashboard size={18} />
+            <span className='uppercase text-[10px] font-black tracking-widest'>
+              Return Home
+            </span>
+          </Link>
+          <Link
             href='/api/auth/signout'
-            className='flex items-center gap-4 px-4 py-3 text-zinc-600 hover:text-primary transition-colors group'
+            className='flex items-center gap-4 px-4 py-3 text-zinc-600 hover:text-red-500 transition-colors group'
           >
             <LogOut size={18} />
             <span className='uppercase text-[10px] font-black tracking-widest'>

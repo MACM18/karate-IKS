@@ -94,6 +94,18 @@ export default async function StudentLayout({
               Grading Forms
             </span>
           </Link>
+          <Link
+            href='/student/settings'
+            className='flex items-center gap-4 px-4 py-3 text-zinc-500 hover:text-white hover:bg-zinc-900/50 rounded-lg transition-all group'
+          >
+            <Settings
+              size={20}
+              className='group-hover:text-primary transition-colors'
+            />
+            <span className='uppercase text-[10px] font-black tracking-widest'>
+              Settings
+            </span>
+          </Link>
         </nav>
 
         <div className='p-6 border-t border-zinc-900 space-y-4'>

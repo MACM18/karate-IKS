@@ -432,13 +432,13 @@ export default async function StudentDashboard() {
                   </div>
                 </div>
                 <div className='pt-8 border-t border-zinc-800/50'>
-                  <button className='text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-white transition-all flex items-center gap-2 group'>
+                  <Link href="/student/settings" className='text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-white transition-all flex items-center gap-2 group'>
                     <User
                       size={12}
                       className='group-hover:text-[var(--belt-theme)]'
                     />{" "}
                     Modify Intelligence Profile
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -454,9 +454,9 @@ export default async function StudentDashboard() {
                 Encountering structural discrepancies in your progression data?
                 Initiate contact with HQ immediately.
               </p>
-              <button className='text-[10px] font-black uppercase tracking-[0.2em] text-white bg-zinc-800 px-6 py-3 rounded-xl hover:bg-[var(--belt-theme)] transition-all relative z-10 w-full text-center'>
+              <a href="mailto:sensei@example.com" className='text-[10px] font-black uppercase tracking-[0.2em] text-white bg-zinc-800 px-6 py-3 rounded-xl hover:bg-[var(--belt-theme)] transition-all relative z-10 w-full text-center block'>
                 Open Comm Channel
-              </button>
+              </a>
             </div>
           </aside>
         </div>
