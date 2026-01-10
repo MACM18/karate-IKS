@@ -47,7 +47,7 @@ export default function AttendanceManager() {
                 body: JSON.stringify({
                     studentId,
                     date: attendanceDate,
-                    classType: schedules.find(s => s.id === selectedClass)?.name || "General"
+                    classType: schedules.find(s => s.id === selectedClass)?.name || "Adults"
                 })
             });
 

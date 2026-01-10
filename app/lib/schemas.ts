@@ -15,7 +15,7 @@ export const StudentSchema = z.object({
 
 export const AttendanceSchema = z.object({
     studentId: z.string().cuid(),
-    classType: z.enum(['Kids', 'Juniors', 'Adults', 'Advanced']),
+    classType: z.string().min(1, "Class type is required"),
 });
 
 export const PromotionSchema = z.object({

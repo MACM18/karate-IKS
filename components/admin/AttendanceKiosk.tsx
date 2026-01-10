@@ -17,7 +17,7 @@ interface AttendanceKioskProps {
 }
 
 export function AttendanceKiosk({ initialStudents }: AttendanceKioskProps) {
-    const [selectedClass, setSelectedClass] = useState("adults-6pm");
+    const [selectedClass, setSelectedClass] = useState("Adults");
     const [checkedInIds, setCheckedInIds] = useState<string[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -78,9 +78,9 @@ export function AttendanceKiosk({ initialStudents }: AttendanceKioskProps) {
                         onChange={(e) => setSelectedClass(e.target.value)}
                         className="bg-transparent text-white border-none focus:ring-0 py-2 cursor-pointer font-bold uppercase tracking-wide"
                     >
-                        <option value="kids-4pm">Kids Class (4:00 PM)</option>
-                        <option value="adults-6pm">Adults All Ranks (6:00 PM)</option>
-                        <option value="advanced-730pm">Black Belt Club (7:30 PM)</option>
+                        <option value="Kids">Kids Class (4:00 PM)</option>
+                        <option value="Adults">Adults All Ranks (6:00 PM)</option>
+                        <option value="Advanced">Black Belt Club (7:30 PM)</option>
                     </select>
                     <ChevronRight className="text-zinc-500 mr-2" size={16} />
                 </div>

@@ -18,12 +18,14 @@ export function FormOverlay({ title, triggerLabel, children }: FormOverlayProps)
             {/* Floating Trigger Button */}
             <button
                 onClick={() => setIsOpen(true)}
-                className="fixed bottom-10 right-10 z-40 bg-primary text-white p-5 rounded-full shadow-[0_20px_50px_rgba(220,38,38,0.3)] hover:scale-110 hover:bg-red-700 transition-all group flex items-center gap-3"
+                className="fixed bottom-10 right-10 z-40 bg-primary text-white px-8 py-5 shadow-[0_20px_50px_rgba(220,38,38,0.3)] hover:scale-110 hover:bg-red-700 transition-all group flex items-center justify-center gap-3 skew-x-[-8deg]"
             >
-                <Plus size={24} className="group-hover:rotate-90 transition-transform duration-500" />
-                {triggerLabel && (
-                    <span className="font-black uppercase tracking-[0.2em] text-[10px] pr-2">{triggerLabel}</span>
-                )}
+                <div className="skew-x-[8deg] flex items-center gap-3">
+                    <Plus size={24} className="group-hover:rotate-90 transition-transform duration-500" />
+                    {triggerLabel && (
+                        <span className="font-black uppercase tracking-[0.2em] text-[10px] pr-2">{triggerLabel}</span>
+                    )}
+                </div>
             </button>
 
             {/* Overlay */}

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Users, LayoutDashboard, Award, Settings, LogOut, Calendar, PenTool, FileText, Image as ImageIcon, Trophy } from "lucide-react";
+import { Users, LayoutDashboard, Award, Settings, LogOut, Calendar, PenTool, FileText, Image as ImageIcon, Trophy, Clock } from "lucide-react";
 
 export default function AdminLayout({
     children,
@@ -62,6 +62,13 @@ export default function AdminLayout({
                         <Trophy size={20} className="group-hover:text-primary transition-colors" />
                         <span className="uppercase text-[10px] font-black tracking-widest">Honors Roll</span>
                     </Link>
+                    <Link
+                        href="/admin/schedules"
+                        className="flex items-center gap-4 px-4 py-3 text-zinc-500 hover:text-white hover:bg-zinc-900 rounded-lg transition-all group"
+                    >
+                        <Clock size={20} className="group-hover:text-primary transition-colors" />
+                        <span className="uppercase text-[10px] font-black tracking-widest">Class Schedules</span>
+                    </Link>
 
                     <div className="pt-8 pb-4">
                         <div className="px-4 text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em] mb-4 italic">Content Ops</div>
@@ -77,7 +84,7 @@ export default function AdminLayout({
                             className="flex items-center gap-4 px-4 py-3 text-zinc-500 hover:text-white hover:bg-zinc-900 rounded-lg transition-all group"
                         >
                             <ImageIcon size={20} className="group-hover:text-primary transition-colors" />
-                            <span className="uppercase text-[10px] font-black tracking-widest">Visual Archives</span>
+                            <span className="uppercase text-[10px] font-black tracking-widest">Gallery</span>
                         </Link>
                     </div>
                 </nav>

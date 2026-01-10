@@ -7,146 +7,198 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// User accounts for Authentication
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  image         String?
-  passwordHash  String?   // For credentials auth
-  role          Role      @default(STUDENT)
-  
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  studentProfile StudentProfile?
+  id             String          @id @default(cuid())
+  name           String?
+  email          String          @unique
+  emailVerified  DateTime?
+  image          String?
+  passwordHash   String?
+  role           Role            @default(STUDENT)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
   accounts       Account[]
-  sessions       Session[]
   posts          Post[]
+  sessions       Session[]
+  studentProfile StudentProfile?
+}
+
+model StudentProfile {
+  id               String             @id @default(cuid())
+  userId           String             @unique
+  phone            String?
+  emergencyContact String?
+  dateOfBirth      DateTime?
+  currentRankId    String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  bio              String?
+  admissionNumber  String?            @unique
+  classId          String?
+  isActive         Boolean            @default(true)
+  achievements     Achievement[]
+  attendance       Attendance[]
+  applications     ExamApplication[]
+  classSchedule    ClassSchedule?     @relation(fields: [classId], references: [id])
+  currentRank      Rank?              @relation(fields: [currentRankId], references: [id])
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  promotions       StudentPromotion[]
+}
+
+model Rank {
+  id         String             @id @default(cuid())
+  name       String
+  colorCode  String
+  order      Int                @unique
+  resources  Resource[]
+  students   StudentProfile[]
+  promotions StudentPromotion[]
+}
+
+model StudentPromotion {
+  id         String         @id @default(cuid())
+  studentId  String
+  rankId     String
+  promotedAt DateTime       @default(now())
+  notes      String?
+  rank       Rank           @relation(fields: [rankId], references: [id])
+  student    StudentProfile @relation(fields: [studentId], references: [id])
+}
+
+model Attendance {
+  id          String         @id @default(cuid())
+  studentId   String
+  date        DateTime       @default(now())
+  classType   String
+  checkedInBy String?
+  student     StudentProfile @relation(fields: [studentId], references: [id])
+}
+
+model ClassSchedule {
+  id        String           @id @default(cuid())
+  name      String
+  day       String
+  time      String
+  capacity  Int              @default(20)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  students  StudentProfile[]
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  category  Category @default(NEWS)
+  published Boolean  @default(false)
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  authorId  String?
+  author    User?    @relation(fields: [authorId], references: [id])
+}
+
+model GalleryItem {
+  id        String   @id @default(cuid())
+  url       String
+  title     String   @default("Untitled")
+  caption   String?
+  category  String?
+  featured  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Achievement {
+  id          String         @id @default(cuid())
+  title       String
+  description String?
+  date        DateTime       @default(now())
+  studentId   String
+  createdAt   DateTime       @default(now())
+  student     StudentProfile @relation(fields: [studentId], references: [id])
+}
+
+model Resource {
+  id          String       @id @default(cuid())
+  title       String
+  description String?
+  type        ResourceType
+  url         String
+  minRankId   String?
+  createdAt   DateTime     @default(now())
+  minRank     Rank?        @relation(fields: [minRankId], references: [id])
+}
+
+model ExamTemplate {
+  id           String            @id @default(cuid())
+  title        String
+  description  String?
+  type         ExamType          @default(GRADING)
+  fields       Json
+  folderName   String            @default("exams")
+  isActive     Boolean           @default(true)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  deadline     DateTime?
+  openDate     DateTime          @default(now())
+  applications ExamApplication[]
+}
+
+model ExamApplication {
+  id               String            @id @default(cuid())
+  studentId        String
+  templateId       String
+  submissionData   Json
+  status           ApplicationStatus @default(PENDING)
+  paymentStatus    PaymentStatus     @default(UNPAID)
+  paymentReference String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  student          StudentProfile    @relation(fields: [studentId], references: [id])
+  template         ExamTemplate      @relation(fields: [templateId], references: [id])
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
 }
 
 enum Role {
   STUDENT
   SENSEI
   ADMIN
-}
-
-// Sensitive PII separated into a profile
-model StudentProfile {
-  id               String   @id @default(cuid())
-  userId           String   @unique
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  phone            String?
-  emergencyContact String?  // PII: Encrypted at application level
-  dateOfBirth      DateTime?
-  bio              String?   // For instructor bios or expanded student profiles
-  
-  admissionNumber  String?   @unique // Generated: e.g., KS-2026-001
-  isActive         Boolean   @default(true)
-  
-  currentRankId    String?
-  currentRank      Rank?    @relation(fields: [currentRankId], references: [id])
-  
-  classId          String?
-  classSchedule    ClassSchedule? @relation(fields: [classId], references: [id])
-  
-  attendance       Attendance[]
-  promotions       StudentPromotion[]
-  achievements     Achievement[]
-  applications     ExamApplication[]
-  
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-}
-
-// Belt Ranks
-model Rank {
-  id          String   @id @default(cuid())
-  name        String   // e.g., "White Belt", "Yellow Belt"
-  colorCode   String   // e.g., "#ffffff", "#facc15"
-  order       Int      @unique // 0, 1, 2... for progression logic
-  
-  students    StudentProfile[]
-  resources   Resource[] // Minimum rank required to view
-  promotions  StudentPromotion[]
-}
-
-// History of belt promotions
-model StudentPromotion {
-  id          String   @id @default(cuid())
-  studentId   String
-  student     StudentProfile @relation(fields: [studentId], references: [id])
-  
-  rankId      String
-  rank        Rank     @relation(fields: [rankId], references: [id])
-  
-  promotedAt  DateTime @default(now())
-  notes       String?
-}
-
-// Dojo Operations
-model Attendance {
-  id          String   @id @default(cuid())
-  studentId   String
-  student     StudentProfile @relation(fields: [studentId], references: [id])
-  
-  date        DateTime @default(now())
-  classType   String   // e.g., "Kids", "Adults", "Advanced"
-  
-  checkedInBy String?  // ID of Sensei who checked them in
-}
-
-model ClassSchedule {
-  id          String   @id @default(cuid())
-  name        String   // e.g., "Kids Monday 5PM"
-  day         String   // e.g., "Monday"
-  time        String   // e.g., "17:00"
-  capacity    Int      @default(20)
-  
-  students    StudentProfile[]
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-// Content Management (News/Feed)
-model Post {
-  id          String   @id @default(cuid())
-  title       String
-  content     String   // Markdown or HTML
-  category    Category @default(NEWS)
-  published   Boolean  @default(false)
-  imageUrl    String?
-  
-  authorId    String?
-  author      User?    @relation(fields: [authorId], references: [id])
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model GalleryItem {
-  id          String   @id @default(cuid())
-  url         String
-  caption     String?
-  category    String?  // e.g., "Tournament", "Class", "Seminar"
-  featured    Boolean  @default(false)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model Achievement {
-  id          String   @id @default(cuid())
-  title       String   // e.g., "Tournament Gold", "Student of the Year"
-  description String?
-  date        DateTime @default(now())
-  studentId   String
-  student     StudentProfile @relation(fields: [studentId], references: [id])
-
-  createdAt   DateTime @default(now())
 }
 
 enum Category {
@@ -156,24 +208,9 @@ enum Category {
   ALERT
 }
 
-// Digital Dojo Bag
-model Resource {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  type        ResourceType // VIDEO, PDF
-  url         String
-  
-  minRankId   String?
-  minRank     Rank?    @relation(fields: [minRankId], references: [id])
-  
-  createdAt   DateTime @default(now())
-}
-
-// Exam System Models
 enum ExamType {
-  GRADING      // For color belts (Kyu)
-  DAN_GRADING  // For black belts (Dan)
+  GRADING
+  DAN_GRADING
   COMPETITION
   OTHER
 }
@@ -191,81 +228,7 @@ enum PaymentStatus {
   REFUNDED
 }
 
-model ExamTemplate {
-  id           String   @id @default(cuid())
-  title        String
-  description  String?
-  type         ExamType @default(GRADING)
-  fields       Json     // Array of Field objects [{ name, label, type, required, options? }]
-  folderName   String   @default("exams") // S3 folder for file uploads
-  isActive     Boolean  @default(true)
-  openDate     DateTime @default(now())
-  deadline     DateTime?
-  
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
-  applications ExamApplication[]
-}
-
-model ExamApplication {
-  id               String   @id @default(cuid())
-  studentId        String
-  student          StudentProfile @relation(fields: [studentId], references: [id])
-  
-  templateId       String
-  template         ExamTemplate @relation(fields: [templateId], references: [id])
-  
-  submissionData   Json     // Map of field names to values (including S3 URLs for files)
-  status           ApplicationStatus @default(PENDING)
-  paymentStatus    PaymentStatus     @default(UNPAID)
-  paymentReference String?  // ID of external transaction
-  
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-}
-
 enum ResourceType {
   VIDEO
   PDF
-}
-
-// NextAuth.js Standard Models (Adapters)
-model Account {
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?
-  access_token      String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?
-  session_state     String?
- 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
- 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
-  @@id([provider, providerAccountId])
-}
- 
-model Session {
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
- 
-model VerificationToken {
-  identifier String
-  token      String
-  expires    DateTime
- 
-  @@id([identifier, token])
 }

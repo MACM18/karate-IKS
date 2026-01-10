@@ -15,6 +15,7 @@ export async function createGalleryItem(formData: FormData) {
 
     const url = formData.get('url') as string;
     const file = formData.get('file') as File;
+    const title = formData.get('title') as string;
     const caption = formData.get('caption') as string;
     const category = formData.get('category') as string;
     const featured = formData.get('featured') === 'true';
@@ -34,6 +35,7 @@ export async function createGalleryItem(formData: FormData) {
     const item = await prisma.galleryItem.create({
         data: {
             url: finalUrl,
+            title: title || "Untitled",
             caption: caption,
             category: category,
             featured: featured,
@@ -325,9 +327,16 @@ export async function markSelfAttendance(classType: string) {
         throw new Error("Unauthorized");
     }
 
+    // Default to "Adults" if the class type passed is generic or invalid for strict schema, 
+    // although schema is relaxed now, it helps data consistency.
+    // Map "General Training" to "Adults" or keep as is since schema allows string.
+    const finalClassType = classType === "General Training" ? "Adults" : classType;
+
     const studentProfile = await prisma.studentProfile.findUnique({
         where: { userId: session.user.id }
     });
+    
+    // ... rest of function
 
     if (!studentProfile) throw new Error("Student profile not found");
 
@@ -517,3 +526,67 @@ export async function promoteStudents(studentIds: string[]) {
 
     revalidatePath('/admin/promotions');
 }
+
+export async function adminUpdateStudentProfile(studentId: string, data: { name: string; admissionNumber: string; email: string }) {
+    const session = await auth();
+    if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'SENSEI')) {
+        throw new Error("Unauthorized");
+    }
+
+    const student = await prisma.studentProfile.findUnique({
+        where: { id: studentId },
+        include: { user: true }
+    });
+
+    if (!student) throw new Error("Student not found");
+
+    await prisma.$transaction([
+        prisma.user.update({
+            where: { id: student.userId },
+            data: { name: data.name, email: data.email }
+        }),
+        prisma.studentProfile.update({
+            where: { id: studentId },
+            data: { admissionNumber: data.admissionNumber }
+        })
+    ]);
+
+    revalidatePath('/admin/students');
+}
+
+export async function updateStudentPassword(studentId: string, password: string) {
+    const session = await auth();
+    if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'SENSEI')) {
+        throw new Error("Unauthorized");
+    }
+
+    const student = await prisma.studentProfile.findUnique({
+        where: { id: studentId }
+    });
+
+    if (!student) throw new Error("Student not found");
+
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    await prisma.user.update({
+        where: { id: student.userId },
+        data: { passwordHash }
+    });
+
+    revalidatePath('/admin/students');
+}
+
+export async function assignStudentClass(studentId: string, classId: string) {
+    const session = await auth();
+    if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'SENSEI')) {
+        throw new Error("Unauthorized");
+    }
+
+    await prisma.studentProfile.update({
+        where: { id: studentId },
+        data: { classId: classId === "none" ? null : classId }
+    });
+
+    revalidatePath('/admin/students');
+}
+

@@ -21,7 +21,7 @@ export async function GET(req: Request) {
                 currentRank: true,
             },
             orderBy: { createdAt: 'desc' }
-        });
+        }) as any[];
 
         // Decrypt PII for Admin view
         const decryptedStudents = students.map(student => ({
@@ -32,6 +32,7 @@ export async function GET(req: Request) {
 
         return NextResponse.json(decryptedStudents);
     } catch (error) {
+        console.error("Error fetching students:", error);
         return NextResponse.json({ error: "Failed to fetch students" }, { status: 500 });
     }
 }

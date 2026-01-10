@@ -63,7 +63,7 @@ export default async function AdminStudentsPage() {
             </div>
 
             {/* Table */}
-            <div className="bg-zinc-950 border border-zinc-900 rounded-lg overflow-hidden">
+            <div className="overflow-visible">
                 <StudentTable students={students} />
             </div>
         </div>

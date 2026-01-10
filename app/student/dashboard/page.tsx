@@ -1,5 +1,5 @@
 import { BeltProgress } from "@/components/BeltProgress";
-import { User, Calendar, BookOpen, Trophy, FileText, Bell, MapPin, Phone, ShieldAlert, Zap } from "lucide-react";
+import { User, Calendar, BookOpen, Trophy, FileText, Bell, MapPin, Phone, ShieldAlert, Zap, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/app/lib/prisma";
@@ -70,6 +70,14 @@ export default async function StudentDashboard() {
         return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
     }).length;
 
+    const today = new Date();
+    const hasAttendedToday = profile.attendance.some((a: any) => {
+        const d = new Date(a.date);
+        return d.getDate() === today.getDate() &&
+               d.getMonth() === today.getMonth() &&
+               d.getFullYear() === today.getFullYear();
+    });
+
     const beltColor = profile.currentRank?.colorCode || "#ffffff";
     const isBlackBelt = profile.currentRank?.name?.toLowerCase().includes("black");
     const themeColor = isBlackBelt ? "#dc2626" : beltColor;
@@ -133,17 +141,25 @@ export default async function StudentDashboard() {
                         </div>
 
                         <div className="flex gap-4 mb-2">
-                            <form action={async () => {
-                                'use server';
-                                await markSelfAttendance("General Training");
-                            }}>
-                                <button className="px-8 py-4 bg-[var(--belt-theme)] text-white text-[10px] font-black uppercase tracking-[0.3em] skew-x-[-12deg] shadow-[8px_8px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all group overflow-hidden relative">
-                                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                                    <span className="skew-x-[12deg] inline-block relative z-10 flex items-center gap-2">
-                                        <Zap size={14} /> Report for Duty
-                                    </span>
-                                </button>
-                            </form>
+                            {hasAttendedToday ? (
+                                <div className="px-8 py-4 bg-emerald-950/50 border border-emerald-500/30 text-emerald-400 text-[10px] font-black uppercase tracking-[0.3em] skew-x-[-12deg] flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+                                     <span className="skew-x-[12deg] flex items-center gap-2">
+                                        <CheckCircle2 size={16} /> Duty Reported
+                                     </span>
+                                </div>
+                            ) : (
+                                <form action={async () => {
+                                    'use server';
+                                    await markSelfAttendance("General Training");
+                                }}>
+                                    <button className="px-8 py-4 bg-[var(--belt-theme)] text-white text-[10px] font-black uppercase tracking-[0.3em] skew-x-[-12deg] shadow-[8px_8px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all group overflow-hidden relative">
+                                        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                                        <span className="skew-x-[12deg] inline-block relative z-10 flex items-center gap-2">
+                                            <Zap size={14} /> Report for Duty
+                                        </span>
+                                    </button>
+                                </form>
+                            )}
                         </div>
                     </div>
                 </div>

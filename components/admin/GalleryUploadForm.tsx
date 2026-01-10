@@ -5,6 +5,7 @@ import { createGalleryItem } from '@/app/lib/actions';
 import { Save, Plus, ImageIcon, Star } from 'lucide-react';
 
 export function GalleryUploadForm({ onSuccess }: { onSuccess?: () => void }) {
+    const [title, setTitle] = useState('');
     const [caption, setCaption] = useState('');
     const [category, setCategory] = useState('Dojo');
     const [url, setUrl] = useState('');
@@ -20,6 +21,7 @@ export function GalleryUploadForm({ onSuccess }: { onSuccess?: () => void }) {
 
         try {
             await createGalleryItem(formData);
+            setTitle('');
             setCaption('');
             setUrl('');
             setFeatured(false);
@@ -36,6 +38,18 @@ export function GalleryUploadForm({ onSuccess }: { onSuccess?: () => void }) {
     return (
         <form onSubmit={handleSubmit} className="bg-zinc-900 border border-zinc-800 p-6 space-y-6">
             <div className="space-y-4">
+                <label className="block text-xs font-black uppercase tracking-widest text-zinc-500">Intel Title</label>
+                <input
+                    name="title"
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="w-full bg-black border border-zinc-800 p-3 text-white focus:border-primary outline-none transition-colors"
+                    placeholder="e.g., Summer Training Camp 2025"
+                />
+            </div>
+            
+            <div className="space-y-4">
                 <label className="block text-xs font-black uppercase tracking-widest text-zinc-500">Caption (Description)</label>
                 <textarea
                     name="caption"
@@ -47,7 +61,7 @@ export function GalleryUploadForm({ onSuccess }: { onSuccess?: () => void }) {
             </div>
 
             <div className="space-y-4">
-                <label className="block text-xs font-black uppercase tracking-widest text-zinc-500">Category</label>
+                <label className="block text-xs font-black uppercase tracking-widest text-zinc-500">Folder / Album</label>
                 <input
                     name="category"
                     type="text"
