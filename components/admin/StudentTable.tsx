@@ -12,6 +12,7 @@ import {
   AlertCircle,
   Trash2,
   Eye,
+  EyeOff,
   Edit,
   Calendar,
   UserMinus,
@@ -48,6 +49,7 @@ export function StudentTable({ students }: StudentTableProps) {
   const [awardingTo, setAwardingTo] = useState<string | null>(null);
   const [achievementTitle, setAchievementTitle] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Modal states
   const [statusModal, setStatusModal] = useState<{
@@ -285,7 +287,7 @@ export function StudentTable({ students }: StudentTableProps) {
                           <MoreHorizontal size={16} />
                         </button>
                         {openMenuId === student.id && (
-                          <div className='absolute right-0 top-full mt-2 w-56 bg-zinc-950 border border-zinc-800 shadow-2xl z-[9999] rounded-sm ring-1 ring-white/10'>
+                          <div className='absolute right-0 top-full mt-2 w-56 bg-zinc-950 border border-zinc-800 shadow-2xl z-9999 rounded-sm ring-1 ring-white/10'>
                             <div className='py-2'>
                               <button
                                 onClick={() => {
@@ -479,14 +481,24 @@ export function StudentTable({ students }: StudentTableProps) {
               <label className='block text-[10px] uppercase font-black text-zinc-500 tracking-widest mb-1'>
                 New Password
               </label>
-              <input
-                name='password'
-                type='text'
-                className='w-full bg-black border border-zinc-800 p-2 text-white font-bold'
-                required
-                minLength={6}
-                placeholder='Enter new password'
-              />
+              <div className='relative'>
+                <input
+                  name='password'
+                  type={showPassword ? "text" : "password"}
+                  className='w-full bg-black border border-zinc-800 p-2 pr-10 text-white font-bold'
+                  required
+                  minLength={6}
+                  placeholder='Enter new password'
+                />
+                <button
+                  type='button'
+                  onClick={() => setShowPassword(!showPassword)}
+                  className='absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-red-500 transition-colors'
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
             <button
               disabled={isSubmitting}
