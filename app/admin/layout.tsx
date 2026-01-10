@@ -12,6 +12,7 @@ import {
   Trophy,
   Clock,
   Shield,
+  BookOpen,
 } from "lucide-react";
 
 export default function AdminLayout({
@@ -79,6 +80,18 @@ export default function AdminLayout({
             />
             <span className='uppercase text-[10px] font-black tracking-widest'>
               Promotions
+            </span>
+          </Link>
+          <Link
+            href='/admin/curriculum'
+            className='flex items-center gap-4 px-4 py-3 text-zinc-500 hover:text-white hover:bg-zinc-900 rounded-lg transition-all group'
+          >
+            <BookOpen
+              size={20}
+              className='group-hover:text-primary transition-colors'
+            />
+            <span className='uppercase text-[10px] font-black tracking-widest'>
+              Curriculum
             </span>
           </Link>
           <Link

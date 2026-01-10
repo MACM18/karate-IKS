@@ -11,6 +11,7 @@ import {
   ShieldAlert,
   Zap,
   CheckCircle2,
+  Target,
 } from "lucide-react";
 import Link from "next/link";
 import { auth } from "@/auth";
@@ -19,6 +20,7 @@ import { redirect } from "next/navigation";
 import { ProgressionStats } from "@/components/student/ProgressionStats";
 import { decrypt, maskData } from "@/app/lib/encryption";
 import { markSelfAttendance } from "@/app/lib/actions";
+import CurriculumBoard from "@/components/student/CurriculumBoard";
 
 export default async function StudentDashboard() {
   const session = await auth();
@@ -30,7 +32,13 @@ export default async function StudentDashboard() {
   const profileData = await prisma.studentProfile.findUnique({
     where: { userId: session.user.id },
     include: {
-      currentRank: true,
+      currentRank: {
+        include: {
+          curriculumItems: {
+            orderBy: { order: "asc" },
+          },
+        },
+      },
       attendance: {
         orderBy: { date: "desc" },
         take: 50,
@@ -39,6 +47,7 @@ export default async function StudentDashboard() {
       applications: {
         include: { template: true },
       },
+      curriculumProgress: true,
     },
   });
 
@@ -98,6 +107,15 @@ export default async function StudentDashboard() {
 
   const beltColor = profile.currentRank?.colorCode || "#ffffff";
   const isBlackBelt = profile.currentRank?.name
+
+  // Prepare curriculum data for CurriculumBoard
+  const curriculumItems =
+    profile.currentRank?.curriculumItems?.map((item: any) => ({
+      ...item,
+      progress: profile.curriculumProgress?.find(
+        (p: any) => p.curriculumId === item.id
+      ),
+    })) || [];
     ?.toLowerCase()
     .includes("black");
   const themeColor = isBlackBelt ? "#dc2626" : beltColor;
@@ -261,6 +279,33 @@ export default async function StudentDashboard() {
             beltColor={themeColor}
           />
         </section>
+
+        {/* Curriculum Mastery Board */}
+        {curriculumItems.length > 0 && (
+          <section className='mb-16'>
+            <div className='flex items-end justify-between mb-8'>
+              <h2 className='text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 flex items-center gap-4'>
+                <span className='whitespace-nowrap italic'>
+                  Curriculum Mastery
+                </span>
+                <div className='w-32 h-px bg-zinc-800' />
+              </h2>
+              <Link
+                href='/student/curriculum'
+                className='text-[10px] font-black uppercase tracking-widest text-primary hover:text-primary/80 transition-colors flex items-center gap-2'
+              >
+                View All <Target size={14} />
+              </Link>
+            </div>
+            <CurriculumBoard
+              rankName={profile.currentRank?.name || "Unknown"}
+              rankColor={profile.currentRank?.colorCode || "#ffffff"}
+              items={curriculumItems}
+              nextRankName={nextRank?.name}
+              showNextRankPreview={true}
+            />
+          </section>
+        )}
 
         <div className='grid grid-cols-1 lg:grid-cols-3 gap-16'>
           {/* Progression Path */}

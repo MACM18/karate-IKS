@@ -5,12 +5,6 @@
 
 */
 -- CreateEnum
-CREATE TYPE "RequirementCategory" AS ENUM ('KATA', 'KIHON', 'KUMITE', 'TERMINOLOGY', 'FITNESS', 'GENERAL');
-
--- CreateEnum
-CREATE TYPE "ProgressStatus" AS ENUM ('NOT_STARTED', 'IN_PROGRESS', 'COMPLETED');
-
--- CreateEnum
 CREATE TYPE "ExamType" AS ENUM ('GRADING', 'DAN_GRADING', 'COMPETITION', 'OTHER');
 
 -- CreateEnum
@@ -19,6 +13,12 @@ CREATE TYPE "ApplicationStatus" AS ENUM ('PENDING', 'REVIEWING', 'APPROVED', 'RE
 -- CreateEnum
 CREATE TYPE "PaymentStatus" AS ENUM ('UNPAID', 'PAID', 'REFUNDED');
 
+-- CreateEnum
+CREATE TYPE "CurriculumCategory" AS ENUM ('KATA', 'TECHNIQUE', 'KUMITE', 'PHYSICAL', 'KNOWLEDGE');
+
+-- CreateEnum
+CREATE TYPE "ProgressStatus" AS ENUM ('NOT_STARTED', 'IN_PROGRESS', 'MASTERED');
+
 -- AlterTable
 ALTER TABLE "GalleryItem" ADD COLUMN     "title" TEXT NOT NULL DEFAULT 'Untitled';
 
@@ -26,35 +26,6 @@ ALTER TABLE "GalleryItem" ADD COLUMN     "title" TEXT NOT NULL DEFAULT 'Untitled
 ALTER TABLE "StudentProfile" ADD COLUMN     "admissionNumber" TEXT,
 ADD COLUMN     "classId" TEXT,
 ADD COLUMN     "isActive" BOOLEAN NOT NULL DEFAULT true;
-
--- CreateTable
-CREATE TABLE "SyllabusRequirement" (
-    "id" TEXT NOT NULL,
-    "rankId" TEXT NOT NULL,
-    "title" TEXT NOT NULL,
-    "description" TEXT,
-    "category" "RequirementCategory" NOT NULL DEFAULT 'GENERAL',
-    "order" INTEGER NOT NULL DEFAULT 0,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "SyllabusRequirement_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "StudentProgress" (
-    "id" TEXT NOT NULL,
-    "studentId" TEXT NOT NULL,
-    "requirementId" TEXT NOT NULL,
-    "status" "ProgressStatus" NOT NULL DEFAULT 'NOT_STARTED',
-    "completedAt" TIMESTAMP(3),
-    "checkedBy" TEXT,
-    "notes" TEXT,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "StudentProgress_pkey" PRIMARY KEY ("id")
-);
 
 -- CreateTable
 CREATE TABLE "ClassSchedule" (
@@ -118,8 +89,38 @@ CREATE TABLE "ExamApplication" (
     CONSTRAINT "ExamApplication_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "CurriculumItem" (
+    "id" TEXT NOT NULL,
+    "rankId" TEXT NOT NULL,
+    "category" "CurriculumCategory" NOT NULL,
+    "itemName" TEXT NOT NULL,
+    "description" TEXT,
+    "order" INTEGER NOT NULL DEFAULT 0,
+    "isRequired" BOOLEAN NOT NULL DEFAULT true,
+    "videoUrl" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "CurriculumItem_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "StudentCurriculumProgress" (
+    "id" TEXT NOT NULL,
+    "studentId" TEXT NOT NULL,
+    "curriculumId" TEXT NOT NULL,
+    "status" "ProgressStatus" NOT NULL DEFAULT 'NOT_STARTED',
+    "completedAt" TIMESTAMP(3),
+    "instructorNotes" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "StudentCurriculumProgress_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
-CREATE UNIQUE INDEX "StudentProgress_studentId_requirementId_key" ON "StudentProgress"("studentId", "requirementId");
+CREATE UNIQUE INDEX "StudentCurriculumProgress_studentId_curriculumId_key" ON "StudentCurriculumProgress"("studentId", "curriculumId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "StudentProfile_admissionNumber_key" ON "StudentProfile"("admissionNumber");
@@ -128,16 +129,16 @@ CREATE UNIQUE INDEX "StudentProfile_admissionNumber_key" ON "StudentProfile"("ad
 ALTER TABLE "StudentProfile" ADD CONSTRAINT "StudentProfile_classId_fkey" FOREIGN KEY ("classId") REFERENCES "ClassSchedule"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "SyllabusRequirement" ADD CONSTRAINT "SyllabusRequirement_rankId_fkey" FOREIGN KEY ("rankId") REFERENCES "Rank"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "StudentProgress" ADD CONSTRAINT "StudentProgress_requirementId_fkey" FOREIGN KEY ("requirementId") REFERENCES "SyllabusRequirement"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "StudentProgress" ADD CONSTRAINT "StudentProgress_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "StudentProfile"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "ExamApplication" ADD CONSTRAINT "ExamApplication_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "StudentProfile"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ExamApplication" ADD CONSTRAINT "ExamApplication_templateId_fkey" FOREIGN KEY ("templateId") REFERENCES "ExamTemplate"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CurriculumItem" ADD CONSTRAINT "CurriculumItem_rankId_fkey" FOREIGN KEY ("rankId") REFERENCES "Rank"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "StudentCurriculumProgress" ADD CONSTRAINT "StudentCurriculumProgress_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "StudentProfile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "StudentCurriculumProgress" ADD CONSTRAINT "StudentCurriculumProgress_curriculumId_fkey" FOREIGN KEY ("curriculumId") REFERENCES "CurriculumItem"("id") ON DELETE CASCADE ON UPDATE CASCADE;

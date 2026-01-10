@@ -323,6 +323,12 @@ export function StudentTable({ students }: StudentTableProps) {
                               >
                                 <BookOpen size={14} /> Assign Class
                               </button>
+                              <a
+                                href={`/admin/curriculum/students/${student.id}`}
+                                className='w-full px-4 py-2.5 text-left text-xs font-bold uppercase tracking-widest text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors flex items-center gap-3'
+                              >
+                                <BookOpen size={14} /> Curriculum Progress
+                              </a>
                               <button className='w-full px-4 py-2.5 text-left text-xs font-bold uppercase tracking-widest text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors flex items-center gap-3'>
                                 <Calendar size={14} /> Attendance History
                               </button>
