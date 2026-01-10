@@ -650,9 +650,8 @@ export async function promoteStudents(studentIds: string[]) {
         data: {
           studentId: id,
           rankId: nextRank.id,
-          notes: `Promoted from ${student.currentRank?.name || "White"} to ${
-            nextRank.name
-          }`,
+          notes: `Promoted from ${student.currentRank?.name || "White"} to ${nextRank.name
+            }`,
         },
       });
     });
@@ -737,4 +736,88 @@ export async function assignStudentClass(studentId: string, classId: string) {
   });
 
   revalidatePath("/admin/students");
+}
+
+// --- Curriculum Actions ---
+
+export async function createCurriculumItem(formData: FormData) {
+  const session = await auth();
+  if (
+    !session ||
+    (session.user.role !== "ADMIN" && session.user.role !== "SENSEI")
+  ) {
+    throw new Error("Unauthorized");
+  }
+
+  const rankId = formData.get("rankId") as string;
+  const category = formData.get("category") as any;
+  const itemName = formData.get("itemName") as string;
+  const description = formData.get("description") as string;
+  const videoUrl = formData.get("videoUrl") as string;
+  const isRequired = formData.get("isRequired") === "true";
+  const order = parseInt(formData.get("order") as string) || 0;
+
+  await prisma.curriculumItem.create({
+    data: {
+      rankId,
+      category,
+      itemName,
+      description,
+      videoUrl: videoUrl || null,
+      isRequired,
+      order,
+    },
+  });
+
+  revalidatePath(`/admin/curriculum/${rankId}`);
+}
+
+export async function updateCurriculumItem(id: string, formData: FormData) {
+  const session = await auth();
+  if (
+    !session ||
+    (session.user.role !== "ADMIN" && session.user.role !== "SENSEI")
+  ) {
+    throw new Error("Unauthorized");
+  }
+
+  const rankId = formData.get("rankId") as string;
+  const category = formData.get("category") as any;
+  const itemName = formData.get("itemName") as string;
+  const description = formData.get("description") as string;
+  const videoUrl = formData.get("videoUrl") as string;
+  const isRequired = formData.get("isRequired") === "true";
+  const order = parseInt(formData.get("order") as string) || 0;
+
+  await prisma.curriculumItem.update({
+    where: { id },
+    data: {
+      category,
+      itemName,
+      description,
+      videoUrl: videoUrl || null,
+      isRequired,
+      order,
+    },
+  });
+
+  if (rankId) {
+    revalidatePath(`/admin/curriculum/${rankId}`);
+  }
+}
+
+export async function deleteCurriculumItem(id: string, rankId: string) {
+  const session = await auth();
+  if (
+    !session ||
+    (session.user.role !== "ADMIN" && session.user.role !== "SENSEI")
+  ) {
+    throw new Error("Unauthorized");
+  }
+
+  await prisma.curriculumItem.delete({
+    where: { id },
+  });
+
+  revalidatePath(`/admin/curriculum/${rankId}`);
 }

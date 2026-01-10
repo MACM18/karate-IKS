@@ -1,7 +1,15 @@
 import { prisma } from "@/app/lib/prisma";
 import Link from "next/link";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import {
+  BookOpen,
+  Dumbbell,
+  Swords,
+  Brain,
+  HandMetal,
+  ChevronRight,
+  LayoutDashboard,
+  Layers
+} from "lucide-react";
 
 export default async function AdminCurriculumPage() {
   // Fetch all ranks with their curriculum counts
@@ -31,18 +39,53 @@ export default async function AdminCurriculumPage() {
     };
   });
 
+  const totalItems = ranksWithStats.reduce((sum, r) => sum + r.totalItems, 0);
+  const totalKata = ranksWithStats.reduce((sum, r) => sum + (r.categoryCounts.KATA || 0), 0);
+  const totalTech = ranksWithStats.reduce((sum, r) => sum + (r.categoryCounts.TECHNIQUE || 0), 0);
+  const totalKumite = ranksWithStats.reduce((sum, r) => sum + (r.categoryCounts.KUMITE || 0), 0);
+
   return (
-    <div className='space-y-6'>
+    <div className='p-8 space-y-12 animate-in fade-in duration-500'>
       {/* Header */}
-      <div className='flex items-center justify-between'>
+      <div className='flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-zinc-900'>
         <div>
-          <h1 className='text-3xl font-bold tracking-tight'>
-            Curriculum Management
+          <h1 className='text-4xl font-heading font-black uppercase tracking-tighter text-white'>
+            Curriculum <span className='text-primary italic'>Command</span>
           </h1>
-          <p className='text-muted-foreground mt-2'>
-            Manage curriculum requirements for each rank
+          <p className='text-zinc-500 mt-2 font-medium'>
+            Manage training protocols and rank requirements.
           </p>
         </div>
+
+        <div className="flex gap-4">
+          <div className="bg-zinc-900 border border-zinc-800 px-6 py-3">
+            <div className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Total Protocols</div>
+            <div className="text-2xl font-bold text-white">{totalItems}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Overview Stats */}
+      <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
+        {[
+          { label: "KATA PROTOCOLS", value: totalKata, color: "text-orange-500", icon: BookOpen },
+          { label: "TECHNIQUE SETS", value: totalTech, color: "text-blue-500", icon: HandMetal },
+          { label: "KUMITE DRILLS", value: totalKumite, color: "text-green-500", icon: Swords },
+          { label: "ALL RANKS", value: ranks.length, color: "text-purple-500", icon: Layers },
+        ].map((stat, i) => (
+          <div key={i} className='bg-zinc-900/50 border border-zinc-800 p-6 flex flex-col justify-between group hover:border-zinc-700 transition-all'>
+            <div className="flex justify-between items-start mb-4">
+              <stat.icon className={`w-5 h-5 ${stat.color} opacity-70`} />
+              <span className={`text-xs font-black bg-zinc-950 px-2 py-1 rounded text-zinc-500`}>SYS.0{i + 1}</span>
+            </div>
+            <div>
+              <div className={`text-3xl font-black ${stat.color}`}>{stat.value}</div>
+              <div className='text-[10px] font-black uppercase tracking-widest text-zinc-500 mt-1'>
+                {stat.label}
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Ranks Grid */}
@@ -51,145 +94,69 @@ export default async function AdminCurriculumPage() {
           <Link
             key={rank.id}
             href={`/admin/curriculum/${rank.id}`}
-            className='group'
+            className='group relative block'
           >
-            <Card className='p-6 transition-all hover:shadow-lg hover:border-primary'>
-              {/* Rank Header */}
-              <div className='flex items-start justify-between mb-4'>
-                <div className='flex items-center gap-3'>
-                  <div
-                    className='w-4 h-4 rounded-full border-2'
-                    style={{ backgroundColor: rank.colorCode }}
-                  />
-                  <div>
-                    <h3 className='font-semibold text-lg group-hover:text-primary transition-colors'>
-                      {rank.name}
-                    </h3>
-                    <p className='text-sm text-muted-foreground'>
-                      {rank.totalItems} requirements
-                    </p>
-                  </div>
+            <div className='absolute inset-0 bg-primary/0 group-hover:bg-primary/5 transition-colors duration-300' />
+            <div className='bg-zinc-950 border border-zinc-800 p-8 h-full transition-all group-hover:border-primary/50 group-hover:translate-x-1 group-hover:-translate-y-1 overflow-hidden relative'>
+
+              {/* Rank Color Strip */}
+              <div
+                className="absolute top-0 left-0 w-1 h-full transition-all group-hover:w-2"
+                style={{ backgroundColor: rank.colorCode }}
+              />
+
+              <div className='flex items-start justify-between mb-6 pl-4'>
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-600 mb-1 block">Start Protocol</span>
+                  <h3 className='font-heading font-black text-2xl uppercase text-white group-hover:text-primary transition-colors'>
+                    {rank.name}
+                  </h3>
+                </div>
+                <div className="w-8 h-8 rounded-full border border-zinc-800 flex items-center justify-center bg-zinc-900 text-zinc-500 group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all">
+                  <ChevronRight size={14} />
                 </div>
               </div>
 
-              {/* Category Breakdown */}
-              {rank.totalItems > 0 ? (
-                <div className='space-y-2'>
-                  <p className='text-xs font-medium text-muted-foreground uppercase tracking-wider'>
-                    Categories
-                  </p>
-                  <div className='flex flex-wrap gap-2'>
+              {/* Progress/Stats */}
+              <div className="pl-4 space-y-4">
+                <div className="flex items-end gap-2">
+                  <span className="text-4xl font-black text-white">{rank.totalItems}</span>
+                  <span className="text-[10px] uppercase font-bold text-zinc-500 mb-2">Requirements</span>
+                </div>
+
+                {rank.totalItems > 0 ? (
+                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-zinc-900">
                     {rank.categoryCounts.KATA && (
-                      <Badge variant='default' className='gap-1'>
-                        <span className='text-xs'>🥋</span>
-                        {rank.categoryCounts.KATA} Kata
-                      </Badge>
+                      <div className="flex items-center gap-2 text-[10px] text-zinc-400 uppercase font-bold">
+                        <BookOpen size={10} className="text-orange-500" /> {rank.categoryCounts.KATA} Kata
+                      </div>
                     )}
                     {rank.categoryCounts.TECHNIQUE && (
-                      <Badge variant='default' className='gap-1'>
-                        <span className='text-xs'>👊</span>
-                        {rank.categoryCounts.TECHNIQUE} Techniques
-                      </Badge>
+                      <div className="flex items-center gap-2 text-[10px] text-zinc-400 uppercase font-bold">
+                        <HandMetal size={10} className="text-blue-500" /> {rank.categoryCounts.TECHNIQUE} Tech
+                      </div>
                     )}
                     {rank.categoryCounts.KUMITE && (
-                      <Badge variant='default' className='gap-1'>
-                        <span className='text-xs'>🤼</span>
-                        {rank.categoryCounts.KUMITE} Kumite
-                      </Badge>
-                    )}
-                    {rank.categoryCounts.PHYSICAL && (
-                      <Badge variant='default' className='gap-1'>
-                        <span className='text-xs'>💪</span>
-                        {rank.categoryCounts.PHYSICAL} Physical
-                      </Badge>
-                    )}
-                    {rank.categoryCounts.KNOWLEDGE && (
-                      <Badge variant='default' className='gap-1'>
-                        <span className='text-xs'>📚</span>
-                        {rank.categoryCounts.KNOWLEDGE} Knowledge
-                      </Badge>
+                      <div className="flex items-center gap-2 text-[10px] text-zinc-400 uppercase font-bold">
+                        <Swords size={10} className="text-green-500" /> {rank.categoryCounts.KUMITE} Kumite
+                      </div>
                     )}
                   </div>
-                </div>
-              ) : (
-                <p className='text-sm text-muted-foreground italic'>
-                  No curriculum items yet
-                </p>
-              )}
-
-              {/* Hover Indicator */}
-              <div className='mt-4 flex items-center text-sm text-muted-foreground group-hover:text-primary transition-colors'>
-                <span>View & Edit</span>
-                <svg
-                  className='w-4 h-4 ml-1 transition-transform group-hover:translate-x-1'
-                  fill='none'
-                  stroke='currentColor'
-                  viewBox='0 0 24 24'
-                >
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth={2}
-                    d='M9 5l7 7-7 7'
-                  />
-                </svg>
+                ) : (
+                  <div className="pt-2 border-t border-zinc-900 text-[10px] text-zinc-600 uppercase font-bold italic">
+                    No data populated
+                  </div>
+                )}
               </div>
-            </Card>
+
+              <div className="absolute right-0 bottom-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <LayoutDashboard size={64} />
+              </div>
+
+            </div>
           </Link>
         ))}
       </div>
-
-      {/* Quick Stats */}
-      <Card className='p-6'>
-        <h2 className='text-xl font-semibold mb-4'>Overview</h2>
-        <div className='grid grid-cols-2 md:grid-cols-5 gap-4'>
-          <div className='text-center'>
-            <p className='text-3xl font-bold text-primary'>
-              {ranksWithStats.reduce((sum, r) => sum + r.totalItems, 0)}
-            </p>
-            <p className='text-sm text-muted-foreground mt-1'>Total Items</p>
-          </div>
-          <div className='text-center'>
-            <p className='text-3xl font-bold text-orange-500'>
-              {ranksWithStats.reduce(
-                (sum, r) => sum + (r.categoryCounts.KATA || 0),
-                0
-              )}
-            </p>
-            <p className='text-sm text-muted-foreground mt-1'>Kata</p>
-          </div>
-          <div className='text-center'>
-            <p className='text-3xl font-bold text-blue-500'>
-              {ranksWithStats.reduce(
-                (sum, r) => sum + (r.categoryCounts.TECHNIQUE || 0),
-                0
-              )}
-            </p>
-            <p className='text-sm text-muted-foreground mt-1'>Techniques</p>
-          </div>
-          <div className='text-center'>
-            <p className='text-3xl font-bold text-green-500'>
-              {ranksWithStats.reduce(
-                (sum, r) => sum + (r.categoryCounts.KUMITE || 0),
-                0
-              )}
-            </p>
-            <p className='text-sm text-muted-foreground mt-1'>Kumite</p>
-          </div>
-          <div className='text-center'>
-            <p className='text-3xl font-bold text-purple-500'>
-              {ranksWithStats.reduce(
-                (sum, r) =>
-                  sum +
-                  (r.categoryCounts.PHYSICAL || 0) +
-                  (r.categoryCounts.KNOWLEDGE || 0),
-                0
-              )}
-            </p>
-            <p className='text-sm text-muted-foreground mt-1'>Other</p>
-          </div>
-        </div>
-      </Card>
     </div>
   );
 }

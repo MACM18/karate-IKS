@@ -21,6 +21,23 @@ import { ProgressionStats } from "@/components/student/ProgressionStats";
 import { decrypt, maskData } from "@/app/lib/encryption";
 import { markSelfAttendance } from "@/app/lib/actions";
 import CurriculumBoard from "@/components/student/CurriculumBoard";
+import { Prisma } from "@prisma/client";
+
+type StudentProfileWithData = Prisma.StudentProfileGetPayload<{
+  include: {
+    currentRank: {
+      include: {
+        curriculumItems: true;
+      };
+    };
+    attendance: true;
+    achievements: true;
+    applications: {
+      include: { template: true };
+    };
+    curriculumProgress: true;
+  };
+}>;
 
 export default async function StudentDashboard() {
   const session = await auth();
@@ -65,8 +82,7 @@ export default async function StudentDashboard() {
     );
   }
 
-  // Cast to any to bypass Prisma type lag in editor
-  const profile = profileData as any;
+  const profile = profileData as StudentProfileWithData;
 
   // Fetch All Ranks to find progression
   const allRanks = await prisma.rank.findMany({ orderBy: { order: "asc" } });
@@ -81,17 +97,16 @@ export default async function StudentDashboard() {
     },
   });
 
-  const activeExams = activeExamsFetch as any[];
   const appliedTemplateIds = new Set(
-    profile.applications.map((a: any) => a.templateId)
+    profile.applications.map((a) => a.templateId)
   );
-  const availableExams = activeExams.filter(
-    (e: any) => !appliedTemplateIds.has(e.id)
+  const availableExams = activeExamsFetch.filter(
+    (e) => !appliedTemplateIds.has(e.id)
   );
 
   // Attendance stats
   const totalClasses = profile.attendance.length;
-  const attendanceThisMonth = profile.attendance.filter((a: any) => {
+  const attendanceThisMonth = profile.attendance.filter((a) => {
     const d = new Date(a.date);
     const now = new Date();
     return (
@@ -100,25 +115,25 @@ export default async function StudentDashboard() {
   }).length;
 
   const today = new Date();
-  const hasAttendedToday = profile.attendance.some((a: any) => {
+  const hasAttendedToday = profile.attendance.some((a) => {
     const d = new Date(a.date);
     return d.toDateString() === today.toDateString();
   });
 
   const beltColor = profile.currentRank?.colorCode || "#ffffff";
   const isBlackBelt = profile.currentRank?.name
-
-  // Prepare curriculum data for CurriculumBoard
-  const curriculumItems =
-    profile.currentRank?.curriculumItems?.map((item: any) => ({
-      ...item,
-      progress: profile.curriculumProgress?.find(
-        (p: any) => p.curriculumId === item.id
-      ),
-    })) || [];
     ?.toLowerCase()
     .includes("black");
   const themeColor = isBlackBelt ? "#dc2626" : beltColor;
+
+  // Prepare curriculum data for CurriculumBoard
+  const curriculumItems =
+    profile.currentRank?.curriculumItems?.map((item) => ({
+      ...item,
+      progress: profile.curriculumProgress?.find(
+        (p) => p.curriculumId === item.id
+      ),
+    })) || [];
 
   // Data Masking for PII
   const maskedPhone = profile.phone
