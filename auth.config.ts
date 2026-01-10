@@ -44,6 +44,8 @@ export const authConfig = {
         async session({ session, token }) {
             if (token && session.user) {
                 (session.user as any).role = token.role;
+                (session.user as any).id = token.sub; // Ensure ID is passed
+                session.user.id = token.sub as string;
             }
             return session;
         }

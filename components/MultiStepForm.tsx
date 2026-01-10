@@ -4,12 +4,12 @@ import React, { useState } from "react";
 import { ChevronRight, ChevronLeft, Check, User, Mail, Phone, Calendar, Shield, Target, Flame } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export function MultiStepForm() {
+export function MultiStepForm({ initialSchedules = [] }: { initialSchedules?: any[] }) {
     const [step, setStep] = useState(1);
     const totalSteps = 3;
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const [schedules, setSchedules] = useState<any[]>([]);
+    const [schedules] = useState<any[]>(initialSchedules);
     const [formData, setFormData] = useState({
         firstName: "",
         lastName: "",
@@ -22,15 +22,6 @@ export function MultiStepForm() {
         program: "adults",
         classId: "",
     });
-
-    React.useEffect(() => {
-        fetch('/api/schedules')
-            .then(res => res.json())
-            .then(data => {
-                if (Array.isArray(data)) setSchedules(data);
-            })
-            .catch(err => console.error("Failed to load schedules", err));
-    }, []);
 
     const handleNext = () => {
         if (step < totalSteps) setStep(step + 1);

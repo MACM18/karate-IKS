@@ -93,11 +93,7 @@ export default async function StudentDashboard() {
   const today = new Date();
   const hasAttendedToday = profile.attendance.some((a: any) => {
     const d = new Date(a.date);
-    return (
-      d.getDate() === today.getDate() &&
-      d.getMonth() === today.getMonth() &&
-      d.getFullYear() === today.getFullYear()
-    );
+    return d.toDateString() === today.toDateString();
   });
 
   const beltColor = profile.currentRank?.colorCode || "#ffffff";

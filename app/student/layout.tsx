@@ -85,6 +85,10 @@ export default async function StudentLayout({
                             <div className="text-[8px] font-black text-zinc-600 uppercase tracking-tighter">Student Clearance</div>
                         </div>
                     </div>
+                    <Link href="/" className="flex items-center gap-4 px-4 py-3 text-zinc-600 hover:text-white transition-colors group">
+                        <Shield size={18} className="group-hover:text-primary transition-colors" />
+                        <span className="uppercase text-[10px] font-black tracking-widest">Public Home</span>
+                    </Link>
                     <Link href="/api/auth/signout" className="flex items-center gap-4 px-4 py-3 text-zinc-600 hover:text-primary transition-colors group">
                         <LogOut size={18} />
                         <span className="uppercase text-[10px] font-black tracking-widest">Logoff</span>

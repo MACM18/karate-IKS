@@ -13,7 +13,13 @@ import Image from "next/image";
 export default async function AboutPage() {
     const senseis = await prisma.user.findMany({
         where: { role: "SENSEI" },
-        include: { studentProfile: true }
+        include: { 
+            studentProfile: {
+                include: {
+                    currentRank: true
+                }
+            }
+        }
     });
 
     const dojoKun = [
@@ -131,7 +137,9 @@ export default async function AboutPage() {
                                             <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-60" />
                                             <div className="absolute bottom-6 left-8">
                                                 <h3 className="text-3xl font-heading font-black uppercase text-foreground leading-none">{sensei.name}</h3>
-                                                <p className="text-primary font-heading font-bold uppercase tracking-widest text-[10px] mt-2">Chief Instructor • Certified Shinbukan</p>
+                                                <p className="text-primary font-heading font-bold uppercase tracking-widest text-[10px] mt-2">
+                                                    {sensei.studentProfile?.currentRank?.name || "Instructor"} • Certified Shinbukan
+                                                </p>
                                             </div>
                                         </div>
                                         <p className="text-muted-foreground leading-relaxed italic border-l-2 border-primary pl-6">
