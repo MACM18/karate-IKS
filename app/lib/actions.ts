@@ -361,6 +361,86 @@ export async function updateApplicationStatus(
   return application;
 }
 
+// --- Program Actions ---
+
+export async function createProgram(formData: FormData) {
+  const session = await auth();
+  if (!session || session.user.role !== "ADMIN")
+    throw new Error("Unauthorized");
+
+  const title = formData.get("title") as string;
+  const ageGroup = formData.get("ageGroup") as string;
+  const description = formData.get("description") as string;
+  const benefitsString = formData.get("benefits") as string;
+  const benefits = benefitsString
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s);
+  const color = formData.get("color") as string;
+  const icon = formData.get("icon") as string;
+  const featured = formData.get("featured") === "true";
+
+  await prisma.program.create({
+    data: {
+      title,
+      ageGroup,
+      description,
+      benefits,
+      color,
+      icon,
+      featured,
+    },
+  });
+
+  revalidatePath("/programs");
+  revalidatePath("/admin/content/programs");
+}
+
+export async function updateProgram(id: string, formData: FormData) {
+  const session = await auth();
+  if (!session || session.user.role !== "ADMIN")
+    throw new Error("Unauthorized");
+
+  const title = formData.get("title") as string;
+  const ageGroup = formData.get("ageGroup") as string;
+  const description = formData.get("description") as string;
+  const benefitsString = formData.get("benefits") as string;
+  const benefits = benefitsString
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s);
+  const color = formData.get("color") as string;
+  const icon = formData.get("icon") as string;
+  const featured = formData.get("featured") === "true";
+
+  await prisma.program.update({
+    where: { id },
+    data: {
+      title,
+      ageGroup,
+      description,
+      benefits,
+      color,
+      icon,
+      featured,
+    },
+  });
+
+  revalidatePath("/programs");
+  revalidatePath("/admin/content/programs");
+}
+
+export async function deleteProgram(id: string) {
+  const session = await auth();
+  if (!session || session.user.role !== "ADMIN")
+    throw new Error("Unauthorized");
+
+  await prisma.program.delete({ where: { id } });
+
+  revalidatePath("/programs");
+  revalidatePath("/admin/content/programs");
+}
+
 export async function markSelfAttendance(classType: string) {
   const session = await auth();
   if (!session || !session.user) {

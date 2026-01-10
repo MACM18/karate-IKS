@@ -11,6 +11,7 @@ import {
   Image as ImageIcon,
   Trophy,
   Clock,
+  Shield,
 } from "lucide-react";
 
 export default function AdminLayout({
@@ -115,8 +116,19 @@ export default function AdminLayout({
             <span className='uppercase text-[10px] font-black tracking-widest'>
               Class Schedules
             </span>
+          </Link>{" "}
+          <Link
+            href='/admin/content/programs'
+            className='flex items-center gap-4 px-4 py-3 text-zinc-500 hover:text-white hover:bg-zinc-900 rounded-lg transition-all group'
+          >
+            <Shield
+              size={20}
+              className='group-hover:text-primary transition-colors'
+            />
+            <span className='uppercase text-[10px] font-black tracking-widest'>
+              Programs
+            </span>
           </Link>
-
           <div className='pt-8 pb-4'>
             <div className='px-4 text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em] mb-4 italic'>
               Content Ops
