@@ -5,7 +5,7 @@ import { ExamApplicationForm } from "@/components/student/ExamApplicationForm";
 import { Clock, Shield, CheckCircle2, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
-export default async function StudentExamsPage({ searchParams }: { searchParams: { id?: string } }) {
+export default async function StudentExamsPage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
     const session = await auth();
     if (!session || !session.user) redirect("/login");
 
@@ -15,10 +15,13 @@ export default async function StudentExamsPage({ searchParams }: { searchParams:
 
     if (!studentProfile) redirect("/join");
 
+    // Await searchParams before accessing its properties
+    const params = await searchParams;
+
     // If an ID is provided, show the application form
-    if (searchParams.id) {
+    if (params.id) {
         const templateData = await prisma.examTemplate.findUnique({
-            where: { id: searchParams.id }
+            where: { id: params.id }
         });
 
         const template = templateData as any;

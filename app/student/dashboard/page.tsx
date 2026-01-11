@@ -20,7 +20,8 @@ import { redirect } from "next/navigation";
 import { ProgressionStats } from "@/components/student/ProgressionStats";
 import { decrypt, maskData } from "@/app/lib/encryption";
 import { markSelfAttendance } from "@/app/lib/actions";
-import CurriculumBoard from "@/components/student/CurriculumBoard";
+import CurriculumBoardStyled from "@/components/student/CurriculumBoardStyled";
+import SenseiContact from "@/components/student/SenseiContact";
 import { Prisma } from "@prisma/client";
 
 type StudentProfileWithData = Prisma.StudentProfileGetPayload<{
@@ -104,6 +105,21 @@ export default async function StudentDashboard() {
     (e) => !appliedTemplateIds.has(e.id)
   );
 
+  // Fetch Dojo Settings for Sensei Contact
+  let dojoSettings = await prisma.dojoSettings.findFirst();
+  if (!dojoSettings) {
+    dojoSettings = {
+      id: "default",
+      phoneNumbers: [],
+      whatsappNumbers: [],
+      senseiName: "Sensei",
+      senseiEmail: null,
+      dojoAddress: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+  }
+
   // Attendance stats
   const totalClasses = profile.attendance.length;
   const attendanceThisMonth = profile.attendance.filter((a) => {
@@ -126,7 +142,7 @@ export default async function StudentDashboard() {
     .includes("black");
   const themeColor = isBlackBelt ? "#dc2626" : beltColor;
 
-  // Prepare curriculum data for CurriculumBoard
+  // Prepare curriculum data for CurriculumBoardStyled
   const curriculumItems =
     profile.currentRank?.curriculumItems?.map((item) => ({
       ...item,
@@ -134,6 +150,17 @@ export default async function StudentDashboard() {
         (p) => p.curriculumId === item.id
       ),
     })) || [];
+
+  // Exam availability mapping for locked/unlocked items
+  // For now, we'll check if there are active exams. In a real scenario,
+  // this would be based on individual student exam announcements
+  const examAvailability = curriculumItems
+    .filter((item) => item.category === "EXAM")
+    .reduce((acc, item) => {
+      // Check if there's an active exam for this student's rank
+      acc[item.id] = availableExams.length > 0;
+      return acc;
+    }, {} as Record<string, boolean>);
 
   // Data Masking for PII
   const maskedPhone = profile.phone
@@ -304,12 +331,12 @@ export default async function StudentDashboard() {
                 View All <Target size={14} />
               </Link>
             </div>
-            <CurriculumBoard
+            <CurriculumBoardStyled
               rankName={profile.currentRank?.name || "Unknown"}
               rankColor={profile.currentRank?.colorCode || "#ffffff"}
               items={curriculumItems}
               nextRankName={nextRank?.name}
-              showNextRankPreview={true}
+              examAvailability={examAvailability}
             />
           </section>
         )}
@@ -424,7 +451,10 @@ export default async function StudentDashboard() {
                   </div>
                 </div>
                 <div className='pt-8 border-t border-zinc-800/50'>
-                  <Link href="/student/settings" className='text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-white transition-all flex items-center gap-2 group'>
+                  <Link
+                    href='/student/settings'
+                    className='text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-white transition-all flex items-center gap-2 group'
+                  >
                     <User
                       size={12}
                       className='group-hover:text-[var(--belt-theme)]'
@@ -435,21 +465,13 @@ export default async function StudentDashboard() {
               </div>
             </div>
 
-            <div className='p-10 bg-black border border-zinc-800 rounded-3xl relative overflow-hidden group hover:border-[var(--belt-theme)] transition-all'>
-              <div className='absolute -top-10 -right-10 p-4 opacity-5 group-hover:opacity-10 transition-opacity grayscale group-hover:grayscale-0 group-hover:text-[var(--belt-theme)]'>
-                <Phone size={180} />
-              </div>
-              <h3 className='text-xl font-heading font-black uppercase mb-3 relative z-10 italic'>
-                Secure Line
-              </h3>
-              <p className='text-xs text-zinc-500 leading-relaxed mb-8 relative z-10 font-medium'>
-                Encountering structural discrepancies in your progression data?
-                Initiate contact with HQ immediately.
-              </p>
-              <a href="mailto:sensei@example.com" className='text-[10px] font-black uppercase tracking-[0.2em] text-white bg-zinc-800 px-6 py-3 rounded-xl hover:bg-[var(--belt-theme)] transition-all relative z-10 w-full text-center block'>
-                Open Comm Channel
-              </a>
-            </div>
+            <SenseiContact
+              senseiName={dojoSettings.senseiName}
+              phoneNumbers={dojoSettings.phoneNumbers}
+              whatsappNumbers={dojoSettings.whatsappNumbers}
+              senseiEmail={dojoSettings.senseiEmail}
+              dojoAddress={dojoSettings.dojoAddress}
+            />
           </aside>
         </div>
       </main>

@@ -142,6 +142,18 @@ export default function AdminLayout({
               Programs
             </span>
           </Link>
+          <Link
+            href='/admin/settings'
+            className='flex items-center gap-4 px-4 py-3 text-zinc-500 hover:text-white hover:bg-zinc-900 rounded-lg transition-all group'
+          >
+            <Settings
+              size={20}
+              className='group-hover:text-primary transition-colors'
+            />
+            <span className='uppercase text-[10px] font-black tracking-widest'>
+              Dojo Settings
+            </span>
+          </Link>
           <div className='pt-8 pb-4'>
             <div className='px-4 text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em] mb-4 italic'>
               Content Ops

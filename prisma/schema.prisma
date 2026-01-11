@@ -292,12 +292,24 @@ model StudentCurriculumProgress {
   @@unique([studentId, curriculumId])
 }
 
+model DojoSettings {
+  id              String   @id @default(cuid())
+  phoneNumbers    String[]
+  whatsappNumbers String[]
+  senseiName      String   @default("Sensei")
+  senseiEmail     String?
+  dojoAddress     String?
+  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now())
+}
+
 enum CurriculumCategory {
   KATA
   TECHNIQUE
   KUMITE
   PHYSICAL
   KNOWLEDGE
+  EXAM
 }
 
 enum ProgressStatus {
