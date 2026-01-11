@@ -63,7 +63,7 @@ export default async function StudentLayout({
         
         div.student-layout::-webkit-scrollbar-thumb {
           background: ${themeColor};
-          border-radius: 5px;
+          border-radius: 0px;
         }
         
         div.student-layout::-webkit-scrollbar-thumb:hover {
@@ -97,7 +97,7 @@ export default async function StudentLayout({
           <nav className='flex-1 p-4 space-y-2 overflow-y-auto'>
             <Link
               href='/student/dashboard'
-              className='flex items-center gap-4 px-4 py-3 text-zinc-500 hover:text-white hover:bg-zinc-900/50 rounded-lg transition-all group'
+              className='flex items-center gap-4 px-4 py-3 text-zinc-500 hover:text-white hover:bg-zinc-900/50 transition-all group'
             >
               <LayoutDashboard
                 size={20}
@@ -109,7 +109,7 @@ export default async function StudentLayout({
             </Link>
             <Link
               href='/student/attendance'
-              className='flex items-center gap-4 px-4 py-3 text-zinc-500 hover:text-white hover:bg-zinc-900/50 rounded-lg transition-all group'
+              className='flex items-center gap-4 px-4 py-3 text-zinc-500 hover:text-white hover:bg-zinc-900/50 transition-all group'
             >
               <Calendar
                 size={20}
@@ -121,7 +121,7 @@ export default async function StudentLayout({
             </Link>
             <Link
               href='/student/curriculum'
-              className='flex items-center gap-4 px-4 py-3 text-zinc-500 hover:text-white hover:bg-zinc-900/50 rounded-lg transition-all group'
+              className='flex items-center gap-4 px-4 py-3 text-zinc-500 hover:text-white hover:bg-zinc-900/50 transition-all group'
             >
               <BookOpen
                 size={20}
@@ -133,7 +133,7 @@ export default async function StudentLayout({
             </Link>
             <Link
               href='/student/certificates'
-              className='flex items-center gap-4 px-4 py-3 text-zinc-500 hover:text-white hover:bg-zinc-900/50 rounded-lg transition-all group'
+              className='flex items-center gap-4 px-4 py-3 text-zinc-500 hover:text-white hover:bg-zinc-900/50 transition-all group'
             >
               <Award
                 size={20}
@@ -145,7 +145,7 @@ export default async function StudentLayout({
             </Link>
             <Link
               href='/student/exams'
-              className='flex items-center gap-4 px-4 py-3 text-zinc-500 hover:text-white hover:bg-zinc-900/50 rounded-lg transition-all group'
+              className='flex items-center gap-4 px-4 py-3 text-zinc-500 hover:text-white hover:bg-zinc-900/50 transition-all group'
             >
               <FileText
                 size={20}
@@ -157,7 +157,7 @@ export default async function StudentLayout({
             </Link>
             <Link
               href='/student/settings'
-              className='flex items-center gap-4 px-4 py-3 text-zinc-500 hover:text-white hover:bg-zinc-900/50 rounded-lg transition-all group'
+              className='flex items-center gap-4 px-4 py-3 text-zinc-500 hover:text-white hover:bg-zinc-900/50 transition-all group'
             >
               <Settings
                 size={20}
@@ -171,7 +171,7 @@ export default async function StudentLayout({
 
           <div className='p-6 border-t border-zinc-900 space-y-4'>
             <div className='flex items-center gap-3'>
-              <div className='w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-700 overflow-hidden'>
+              <div className='w-10 h-10 bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-700 overflow-hidden'>
                 {session.user.image ? (
                   <img
                     src={session.user.image}

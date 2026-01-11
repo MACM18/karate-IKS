@@ -12,6 +12,8 @@ import {
   Zap,
   CheckCircle2,
   Target,
+  Shield,
+  Settings,
 } from "lucide-react";
 import Link from "next/link";
 import { auth } from "@/auth";
@@ -26,6 +28,7 @@ import { Prisma } from "@prisma/client";
 
 type StudentProfileWithData = Prisma.StudentProfileGetPayload<{
   include: {
+    user: true;
     currentRank: {
       include: {
         curriculumItems: true;
@@ -50,6 +53,7 @@ export default async function StudentDashboard() {
   const profileData = await prisma.studentProfile.findUnique({
     where: { userId: session.user.id },
     include: {
+      user: true,
       currentRank: {
         include: {
           curriculumItems: {
@@ -136,6 +140,40 @@ export default async function StudentDashboard() {
     return d.toDateString() === today.toDateString();
   });
 
+  // Calculate Streak
+  const sortedUniqueDates = Array.from(
+    new Set(profile.attendance.map((a) => new Date(a.date).toDateString()))
+  )
+    .map((d) => new Date(d))
+    .sort((a, b) => b.getTime() - a.getTime());
+
+  let streak = 0;
+  if (sortedUniqueDates.length > 0) {
+    const latest = sortedUniqueDates[0];
+    const todayStart = new Date(today.toDateString());
+    // Difference in days (0 if today, 1 if yesterday)
+    const diffDays = Math.floor(
+      (todayStart.getTime() - latest.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    // Streak is alive if latest attendance was Today (0) or Yesterday (1)
+    if (diffDays <= 1) {
+      streak = 1;
+      for (let i = 0; i < sortedUniqueDates.length - 1; i++) {
+        const current = sortedUniqueDates[i];
+        const previous = sortedUniqueDates[i + 1];
+        const gap = Math.round(
+          (current.getTime() - previous.getTime()) / (1000 * 60 * 60 * 24)
+        );
+        if (gap === 1) {
+          streak++;
+        } else {
+          break;
+        }
+      }
+    }
+  }
+
   const beltColor = profile.currentRank?.colorCode || "#ffffff";
   const isBlackBelt = profile.currentRank?.name
     ?.toLowerCase()
@@ -202,41 +240,54 @@ export default async function StudentDashboard() {
           <div className='flex flex-col md:flex-row items-end gap-8'>
             <div className='relative group'>
               {/* Profile Image with Belt Border */}
-              <div
-                className={`w-36 h-36 md:w-48 md:h-48 rounded-2xl overflow-hidden border-4 shadow-[0_0_50px_rgba(0,0,0,0.5)] transition-all duration-500 group-hover:scale-[1.02] group-hover:rotate-1 ${
-                  isBlackBelt
-                    ? "animate-pulse shadow-[0_0_60px_rgba(220,38,38,0.4)]"
-                    : ""
-                }`}
-                style={{
-                  borderColor: themeColor,
-                  boxShadow: isBlackBelt
-                    ? `0 0 60px rgba(220,38,38,0.4), inset 0 0 30px rgba(220,38,38,0.1)`
-                    : `0 0 50px rgba(0,0,0,0.5)`,
-                }}
+              <Link
+                href='/student/settings'
+                className='block relative cursor-pointer'
+                title='Update Profile Intelligence'
               >
-                {session.user.image ? (
-                  <img
-                    src={session.user.image}
-                    alt={session.user.name || ""}
-                    className='w-full h-full object-cover'
-                  />
-                ) : (
-                  <div className='w-full h-full bg-zinc-900 flex items-center justify-center text-zinc-700'>
-                    <User size={80} />
+                <div
+                  className={`w-36 h-36 md:w-48 md:h-48 overflow-hidden border-4 shadow-[0_0_50px_rgba(0,0,0,0.5)] transition-all duration-500 group-hover:scale-[1.02] group-hover:rotate-1 ${
+                    isBlackBelt
+                      ? "animate-pulse shadow-[0_0_60px_rgba(220,38,38,0.4)]"
+                      : ""
+                  }`}
+                  style={{
+                    borderColor: themeColor,
+                    boxShadow: isBlackBelt
+                      ? `0 0 60px rgba(220,38,38,0.4), inset 0 0 30px rgba(220,38,38,0.1)`
+                      : `0 0 50px rgba(0,0,0,0.5)`,
+                  }}
+                >
+                  {profile.user.image ? (
+                    <img
+                      src={profile.user.image}
+                      alt={profile.user.name || ""}
+                      className='w-full h-full object-cover'
+                    />
+                  ) : (
+                    <div className='w-full h-full bg-zinc-900 flex items-center justify-center text-zinc-700'>
+                      <User size={80} />
+                    </div>
+                  )}
+                  {/* Hover Overlay */}
+                  <div className='absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white'>
+                    <User size={24} className='mb-2' />
+                    <span className='text-[10px] font-black uppercase tracking-widest'>
+                      Update
+                    </span>
                   </div>
-                )}
-              </div>
+                </div>
+              </Link>
               {/* Rank Badge */}
               <div
-                className='absolute -bottom-3 -right-3 px-4 py-1.5 bg-black border-2 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl'
+                className='absolute -bottom-3 -right-3 px-4 py-1.5 bg-black border-2 text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl'
                 style={{ borderColor: themeColor, color: themeColor }}
               >
                 {profile.currentRank?.name || "Student"}
               </div>
               {/* Black Belt Special Badge */}
               {isBlackBelt && (
-                <div className='absolute -top-3 -left-3 bg-gradient-to-br from-red-600 via-red-700 to-black border-2 border-red-500 px-3 py-1.5 rounded-lg shadow-[0_0_20px_rgba(220,38,38,0.6)] animate-pulse'>
+                <div className='absolute -top-3 -left-3 bg-gradient-to-br from-red-600 via-red-700 to-black border-2 border-red-500 px-3 py-1.5 shadow-[0_0_20px_rgba(220,38,38,0.6)] animate-pulse'>
                   <div className='flex items-center gap-2'>
                     <Shield size={14} className='text-yellow-400' />
                     <span className='text-[9px] font-black uppercase tracking-widest text-yellow-400'>
@@ -249,9 +300,9 @@ export default async function StudentDashboard() {
 
             <div className='flex-1 mb-2'>
               <h1 className='text-6xl md:text-8xl font-heading font-black uppercase tracking-tighter leading-none mb-6'>
-                {session.user.name?.split(" ")[0]}{" "}
+                {profile.user.name?.split(" ")[0]}{" "}
                 <span style={{ color: themeColor }}>
-                  {session.user.name?.split(" ").slice(1).join(" ")}
+                  {profile.user.name?.split(" ").slice(1).join(" ")}
                 </span>
               </h1>
               <div className='flex flex-wrap gap-6 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500'>
@@ -292,7 +343,7 @@ export default async function StudentDashboard() {
         {/* Active Alerts / Exams */}
         {availableExams.length > 0 && (
           <section className='mb-16'>
-            <div className='relative p-8 rounded-2xl border-2 border-[var(--belt-theme)] bg-[var(--belt-theme-soft)] backdrop-blur-md overflow-hidden animate-in fade-in slide-in-from-top-4 duration-700'>
+            <div className='relative p-8 border-2 border-[var(--belt-theme)] bg-[var(--belt-theme-soft)] backdrop-blur-md overflow-hidden animate-in fade-in slide-in-from-top-4 duration-700'>
               <div className='absolute -top-4 -right-4 p-4 opacity-5 rotate-12'>
                 <Bell size={120} />
               </div>
@@ -341,7 +392,7 @@ export default async function StudentDashboard() {
               required: 12,
               total: totalClasses,
             }}
-            streak={totalClasses > 0 ? 5 : 0}
+            streak={streak}
             achievements={profile.achievements.length}
             beltColor={themeColor}
           />
@@ -386,7 +437,7 @@ export default async function StudentDashboard() {
                   Rank: {profile.currentRank?.name || "Initiate"}
                 </div>
               </div>
-              <div className='bg-zinc-900/20 border border-zinc-800/50 p-10 rounded-3xl'>
+              <div className='bg-zinc-900/20 border border-zinc-800/50 p-10'>
                 <BeltProgress
                   currentBelt={profile.currentRank?.name || "White"}
                   nextBelt={nextRank?.name || "Dan Candidate"}
@@ -400,8 +451,8 @@ export default async function StudentDashboard() {
             </section>
 
             <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
-              <div className='p-10 bg-zinc-900/20 border border-zinc-800 rounded-3xl hover:bg-zinc-900/40 transition-all group border-b-4 border-b-zinc-800 hover:border-b-[var(--belt-theme)] translate-y-0 hover:-translate-y-1'>
-                <div className='p-4 bg-zinc-800/50 w-fit rounded-2xl mb-8 group-hover:bg-[var(--belt-theme-soft)] group-hover:text-[var(--belt-theme)] transition-colors'>
+              <div className='p-10 bg-zinc-900/20 border border-zinc-800 hover:bg-zinc-900/40 transition-all group border-b-4 border-b-zinc-800 hover:border-b-[var(--belt-theme)] translate-y-0 hover:-translate-y-1'>
+                <div className='p-4 bg-zinc-800/50 w-fit mb-8 group-hover:bg-[var(--belt-theme-soft)] group-hover:text-[var(--belt-theme)] transition-colors'>
                   <BookOpen size={32} />
                 </div>
                 <h3 className='font-heading uppercase text-3xl font-black mb-3'>
@@ -420,8 +471,8 @@ export default async function StudentDashboard() {
                 </Link>
               </div>
 
-              <div className='p-10 bg-zinc-900/20 border border-zinc-800 rounded-3xl hover:bg-zinc-900/40 transition-all group border-b-4 border-b-zinc-800 hover:border-b-amber-500 translate-y-0 hover:-translate-y-1'>
-                <div className='p-4 bg-zinc-800/50 w-fit rounded-2xl mb-8 group-hover:bg-amber-500/10 group-hover:text-amber-500 transition-colors'>
+              <div className='p-10 bg-zinc-900/20 border border-zinc-800 hover:bg-zinc-900/40 transition-all group border-b-4 border-b-zinc-800 hover:border-b-amber-500 translate-y-0 hover:-translate-y-1'>
+                <div className='p-4 bg-zinc-800/50 w-fit mb-8 group-hover:bg-amber-500/10 group-hover:text-amber-500 transition-colors'>
                   <Trophy size={32} />
                 </div>
                 <h3 className='font-heading uppercase text-3xl font-black mb-3'>
@@ -437,7 +488,7 @@ export default async function StudentDashboard() {
                     {profile.achievements.slice(0, 3).map((a: any) => (
                       <div
                         key={a.id}
-                        className='text-[10px] font-black uppercase tracking-widest text-zinc-400 bg-white/5 p-3 rounded-xl flex items-center justify-between border border-zinc-800/50'
+                        className='text-[10px] font-black uppercase tracking-widest text-zinc-400 bg-white/5 p-3 flex items-center justify-between border border-zinc-800/50'
                       >
                         <span>★ {a.title}</span>
                         <span className='text-[8px] opacity-40'>
@@ -455,7 +506,7 @@ export default async function StudentDashboard() {
           <aside className='space-y-12'>
             {/* Proficiency Card with Black Belt Special Styling */}
             <div
-              className={`p-10 border rounded-3xl backdrop-blur-sm ${
+              className={`p-10 border backdrop-blur-sm ${
                 isBlackBelt
                   ? "bg-gradient-to-br from-red-950/40 via-zinc-900/60 to-black border-red-900/50 shadow-[0_0_40px_rgba(220,38,38,0.2)]"
                   : "bg-zinc-900/30 border-zinc-800"
@@ -466,7 +517,7 @@ export default async function StudentDashboard() {
                   Curriculum Mastery
                 </h3>
                 {isBlackBelt && (
-                  <div className='flex items-center gap-2 bg-gradient-to-r from-red-900/50 to-yellow-900/30 border border-red-700/50 px-3 py-1 rounded-lg'>
+                  <div className='flex items-center gap-2 bg-gradient-to-r from-red-900/50 to-yellow-900/30 border border-red-700/50 px-3 py-1'>
                     <Shield size={12} className='text-yellow-400' />
                     <span className='text-[9px] font-black uppercase tracking-widest text-yellow-400'>
                       Elite
@@ -525,33 +576,32 @@ export default async function StudentDashboard() {
               </div>
             </div>
 
-            <div className='bg-zinc-900/30 p-10 border border-zinc-800 rounded-3xl backdrop-blur-sm'>
+            <div className='bg-zinc-900/30 p-10 border border-zinc-800 backdrop-blur-sm'>
               <h3 className='text-zinc-500 uppercase text-[10px] font-black tracking-[0.3em] mb-10 flex items-center justify-between'>
-                Security Archive{" "}
-                <ShieldAlert size={14} className='opacity-20' />
+                Profile Details <User size={14} className='opacity-20' />
               </h3>
               <div className='space-y-8'>
                 <div className='group cursor-default'>
                   <div className='text-[8px] font-black text-zinc-700 uppercase tracking-widest mb-1 group-hover:text-[var(--belt-theme)] transition-colors'>
-                    Combat Identity
+                    Student Name
                   </div>
                   <div className='text-base font-black text-white uppercase tracking-tighter'>
-                    {session.user.name}
+                    {profile.user.name}
                   </div>
                 </div>
                 <div className='group cursor-default'>
                   <div className='text-[8px] font-black text-zinc-700 uppercase tracking-widest mb-1 group-hover:text-[var(--belt-theme)] transition-colors'>
-                    Encrypted Signal
+                    Phone Number
                   </div>
-                  <div className='text-sm font-bold text-zinc-400 font-mono tracking-tighter bg-black/40 p-2 rounded border border-zinc-800/50'>
+                  <div className='text-sm font-bold text-zinc-400 font-mono tracking-tighter bg-black/40 p-2 border border-zinc-800/50'>
                     {maskedPhone}
                   </div>
                 </div>
                 <div className='group cursor-default'>
                   <div className='text-[8px] font-black text-zinc-700 uppercase tracking-widest mb-1 group-hover:text-[var(--belt-theme)] transition-colors'>
-                    Emergency Bridge
+                    Emergency Contact
                   </div>
-                  <div className='text-sm font-bold text-zinc-400 font-mono tracking-tighter bg-black/40 p-2 rounded border border-zinc-800/50'>
+                  <div className='text-sm font-bold text-zinc-400 font-mono tracking-tighter bg-black/40 p-2 border border-zinc-800/50'>
                     {maskedEmergency}
                   </div>
                 </div>
@@ -560,11 +610,11 @@ export default async function StudentDashboard() {
                     href='/student/settings'
                     className='text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-white transition-all flex items-center gap-2 group'
                   >
-                    <User
+                    <Settings
                       size={12}
                       className='group-hover:text-[var(--belt-theme)]'
                     />{" "}
-                    Modify Intelligence Profile
+                    Edit Profile
                   </Link>
                 </div>
               </div>

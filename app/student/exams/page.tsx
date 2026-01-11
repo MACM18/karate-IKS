@@ -105,7 +105,7 @@ export default async function StudentExamsPage({
                       >
                         {template.title}
                       </h3>
-                      <span className='px-2 py-0.5 bg-zinc-800 text-[10px] font-black uppercase tracking-widest text-zinc-400 rounded-sm'>
+                      <span className='px-2 py-0.5 bg-zinc-800 text-[10px] font-black uppercase tracking-widest text-zinc-400'>
                         {template.type}
                       </span>
                     </div>
@@ -142,7 +142,7 @@ export default async function StudentExamsPage({
             })}
 
             {templates.length === 0 && (
-              <div className='py-20 text-center bg-zinc-900/50 border border-zinc-800 rounded-sm'>
+              <div className='py-20 text-center bg-zinc-900/50 border border-zinc-800'>
                 <Shield className='w-12 h-12 text-zinc-800 mx-auto mb-4' />
                 <p className='text-zinc-600 font-medium italic'>
                   No active exams at this time.
@@ -169,7 +169,7 @@ export default async function StudentExamsPage({
                     {app.template.title}
                   </h4>
                   <span
-                    className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-sm ${
+                    className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 ${
                       app.status === "APPROVED"
                         ? "bg-green-900/30 text-green-400"
                         : app.status === "REJECTED"
