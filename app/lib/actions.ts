@@ -853,3 +853,63 @@ export async function updateStudentRank(studentId: string, rankId: string) {
 
   revalidatePath("/admin/students");
 }
+
+export async function createStudentManually(prevState: any, formData: FormData) {
+  const session = await auth();
+  if (
+    !session ||
+    (session.user.role !== "ADMIN" && session.user.role !== "SENSEI")
+  ) {
+    return { error: "Unauthorized" };
+  }
+
+  const name = formData.get("name") as string;
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+
+  if (!name || !email || !password) {
+    return { error: "Missing fields" };
+  }
+
+  try {
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        passwordHash,
+        role: "STUDENT",
+      },
+    });
+
+    const year = new Date().getFullYear();
+    const count = await prisma.studentProfile.count({
+      where: {
+        admissionNumber: {
+          startsWith: `KS-${year}`,
+        },
+      },
+    });
+    const admissionNumber = `KS-${year}-${(count + 1)
+      .toString()
+      .padStart(3, "0")}`;
+
+    const rank = await prisma.rank.findFirst({ orderBy: { order: "asc" } });
+
+    await prisma.studentProfile.create({
+      data: {
+        userId: user.id,
+        admissionNumber,
+        currentRankId: rank?.id,
+        dateOfBirth: new Date(),
+      },
+    });
+
+    revalidatePath("/admin/students");
+    return { success: true };
+  } catch (e) {
+    console.error(e);
+    return { error: "Failed to create student. Email might be in use." };
+  }
+}

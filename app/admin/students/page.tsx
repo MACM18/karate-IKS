@@ -1,6 +1,7 @@
 import { StudentTable, Student } from "@/components/admin/StudentTable";
-import { Search, Filter, Plus } from "lucide-react";
+import { Search, Filter } from "lucide-react";
 import { prisma } from "@/app/lib/prisma";
+import { CreateStudentButton } from "@/components/admin/CreateStudentButton";
 
 export default async function AdminStudentsPage() {
   const rawStudents = await prisma.studentProfile.findMany({
@@ -43,9 +44,7 @@ export default async function AdminStudentsPage() {
             Manage dojo members and attendance.
           </p>
         </div>
-        <button className='flex items-center gap-2 px-6 py-3 bg-action text-white font-bold uppercase tracking-widest hover:bg-red-700 transition-colors rounded-sm'>
-          <Plus size={18} /> New Student
-        </button>
+        <CreateStudentButton />
       </header>
 
       {/* Toolbar */}

@@ -217,19 +217,11 @@ export default async function StudentDashboard() {
                   </span>
                 </div>
               ) : (
-                <form
-                  action={async () => {
-                    "use server";
-                    await markSelfAttendance("General Training");
-                  }}
-                >
-                  <button className='px-8 py-4 bg-[var(--belt-theme)] text-white text-[10px] font-black uppercase tracking-[0.3em] skew-x-[-12deg] shadow-[8px_8px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all group overflow-hidden relative'>
-                    <div className='absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300' />
-                    <span className='skew-x-[12deg] inline-block relative z-10 flex items-center gap-2'>
-                      <Zap size={14} /> Report for Duty
-                    </span>
-                  </button>
-                </form>
+                <div className='px-8 py-4 border-2 border-[var(--belt-theme)] text-[var(--belt-theme)] text-[10px] font-black uppercase tracking-[0.3em] skew-x-[-12deg] flex items-center justify-center opacity-80'>
+                  <span className='skew-x-[12deg] flex items-center gap-2'>
+                    <Zap size={14} /> Check-in Required
+                  </span>
+                </div>
               )}
             </div>
           </div>
