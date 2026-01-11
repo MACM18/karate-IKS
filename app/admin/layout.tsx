@@ -1,3 +1,4 @@
+import SignOutButton from "@/components/SignOutButton";
 import Link from "next/link";
 import {
   Users,
@@ -195,15 +196,12 @@ export default function AdminLayout({
               Return Home
             </span>
           </Link>
-          <Link
-            href='/api/auth/signout'
-            className='flex items-center gap-4 px-4 py-3 text-zinc-600 hover:text-red-500 transition-colors group'
-          >
+          <SignOutButton className='w-full flex items-center gap-4 px-4 py-3 text-zinc-600 hover:text-red-500 transition-colors group'>
             <LogOut size={18} />
             <span className='uppercase text-[10px] font-black tracking-widest'>
               Sign Out
             </span>
-          </Link>
+          </SignOutButton>
         </div>
       </aside>
 

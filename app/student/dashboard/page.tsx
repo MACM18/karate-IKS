@@ -463,10 +463,10 @@ export default async function StudentDashboard() {
                   current rank phase.
                 </p>
                 <Link
-                  href='/student/resources'
+                  href='/student/curriculum'
                   className='text-[10px] font-black uppercase tracking-[0.2em] text-[var(--belt-theme)] hover:brightness-125 flex items-center gap-2'
                 >
-                  Open Archives{" "}
+                  View Curriculum{" "}
                   <div className='w-10 h-px bg-[var(--belt-theme)] opacity-40' />
                 </Link>
               </div>

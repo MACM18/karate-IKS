@@ -1,3 +1,4 @@
+import SignOutButton from "@/components/SignOutButton";
 import Link from "next/link";
 import {
   LayoutDashboard,
@@ -203,15 +204,15 @@ export default async function StudentLayout({
                 Public Home
               </span>
             </Link>
-            <Link
-              href='/api/auth/signout'
-              className='flex items-center gap-4 px-4 py-3 text-zinc-600 hover:text-primary transition-colors group'
+            <SignOutButton
+              submitButtonClass='bg-[var(--belt-theme)] hover:bg-[var(--belt-theme)]/80 text-white'
+              className='w-full flex items-center gap-4 px-4 py-3 text-zinc-600 hover:text-primary transition-colors group'
             >
               <LogOut size={18} />
               <span className='uppercase text-[10px] font-black tracking-widest'>
                 Logoff
               </span>
-            </Link>
+            </SignOutButton>
           </div>
         </aside>
 
