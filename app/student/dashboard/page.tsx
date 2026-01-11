@@ -142,6 +142,17 @@ export default async function StudentDashboard() {
     .includes("black");
   const themeColor = isBlackBelt ? "#dc2626" : beltColor;
 
+  // Calculate curriculum proficiency
+  const totalCurriculumItems =
+    profile.currentRank?.curriculumItems?.length || 0;
+  const masteredCurriculumItems =
+    profile.curriculumProgress?.filter((p) => p.status === "MASTERED").length ||
+    0;
+  const proficiencyPercentage =
+    totalCurriculumItems > 0
+      ? Math.round((masteredCurriculumItems / totalCurriculumItems) * 100)
+      : 0;
+
   // Prepare curriculum data for CurriculumBoardStyled
   const curriculumItems =
     profile.currentRank?.curriculumItems?.map((item) => ({
@@ -190,9 +201,19 @@ export default async function StudentDashboard() {
         <div className='container mx-auto px-4 lg:px-8 h-full flex flex-col justify-end pb-12 relative z-20'>
           <div className='flex flex-col md:flex-row items-end gap-8'>
             <div className='relative group'>
+              {/* Profile Image with Belt Border */}
               <div
-                className='w-36 h-36 md:w-48 md:h-48 rounded-2xl overflow-hidden border-4 border-black shadow-[0_0_50px_rgba(0,0,0,0.5)] transition-all duration-500 group-hover:scale-[1.02] group-hover:rotate-1'
-                style={{ borderColor: themeColor }}
+                className={`w-36 h-36 md:w-48 md:h-48 rounded-2xl overflow-hidden border-4 shadow-[0_0_50px_rgba(0,0,0,0.5)] transition-all duration-500 group-hover:scale-[1.02] group-hover:rotate-1 ${
+                  isBlackBelt
+                    ? "animate-pulse shadow-[0_0_60px_rgba(220,38,38,0.4)]"
+                    : ""
+                }`}
+                style={{
+                  borderColor: themeColor,
+                  boxShadow: isBlackBelt
+                    ? `0 0 60px rgba(220,38,38,0.4), inset 0 0 30px rgba(220,38,38,0.1)`
+                    : `0 0 50px rgba(0,0,0,0.5)`,
+                }}
               >
                 {session.user.image ? (
                   <img
@@ -206,12 +227,24 @@ export default async function StudentDashboard() {
                   </div>
                 )}
               </div>
+              {/* Rank Badge */}
               <div
                 className='absolute -bottom-3 -right-3 px-4 py-1.5 bg-black border-2 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl'
                 style={{ borderColor: themeColor, color: themeColor }}
               >
                 {profile.currentRank?.name || "Student"}
               </div>
+              {/* Black Belt Special Badge */}
+              {isBlackBelt && (
+                <div className='absolute -top-3 -left-3 bg-gradient-to-br from-red-600 via-red-700 to-black border-2 border-red-500 px-3 py-1.5 rounded-lg shadow-[0_0_20px_rgba(220,38,38,0.6)] animate-pulse'>
+                  <div className='flex items-center gap-2'>
+                    <Shield size={14} className='text-yellow-400' />
+                    <span className='text-[9px] font-black uppercase tracking-widest text-yellow-400'>
+                      Dan
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className='flex-1 mb-2'>
@@ -420,6 +453,78 @@ export default async function StudentDashboard() {
 
           {/* Personal Intelligence (Sidebar) */}
           <aside className='space-y-12'>
+            {/* Proficiency Card with Black Belt Special Styling */}
+            <div
+              className={`p-10 border rounded-3xl backdrop-blur-sm ${
+                isBlackBelt
+                  ? "bg-gradient-to-br from-red-950/40 via-zinc-900/60 to-black border-red-900/50 shadow-[0_0_40px_rgba(220,38,38,0.2)]"
+                  : "bg-zinc-900/30 border-zinc-800"
+              }`}
+            >
+              <div className='flex items-center justify-between mb-6'>
+                <h3 className='uppercase text-[10px] font-black tracking-[0.3em] text-zinc-500'>
+                  Curriculum Mastery
+                </h3>
+                {isBlackBelt && (
+                  <div className='flex items-center gap-2 bg-gradient-to-r from-red-900/50 to-yellow-900/30 border border-red-700/50 px-3 py-1 rounded-lg'>
+                    <Shield size={12} className='text-yellow-400' />
+                    <span className='text-[9px] font-black uppercase tracking-widest text-yellow-400'>
+                      Elite
+                    </span>
+                  </div>
+                )}
+              </div>
+              <div className='space-y-4'>
+                <div className='flex items-center justify-between'>
+                  <span
+                    className='text-sm font-black uppercase tracking-widest'
+                    style={{ color: themeColor }}
+                  >
+                    Proficiency
+                  </span>
+                  <span
+                    className='text-4xl font-heading font-black'
+                    style={{ color: themeColor }}
+                  >
+                    {proficiencyPercentage}%
+                  </span>
+                </div>
+                <div className='h-3 bg-black border border-zinc-800 overflow-hidden'>
+                  <div
+                    className='h-full transition-all duration-500'
+                    style={{
+                      width: `${proficiencyPercentage}%`,
+                      backgroundColor: themeColor,
+                      boxShadow: isBlackBelt
+                        ? `0 0 20px ${themeColor}`
+                        : "none",
+                    }}
+                  />
+                </div>
+                <div className='grid grid-cols-2 gap-3 pt-4'>
+                  <div className='bg-black border border-zinc-800 p-3 text-center'>
+                    <p
+                      className='text-xl font-heading font-black'
+                      style={{ color: themeColor }}
+                    >
+                      {masteredCurriculumItems}
+                    </p>
+                    <p className='text-[8px] font-black uppercase tracking-widest text-zinc-600 mt-1'>
+                      Mastered
+                    </p>
+                  </div>
+                  <div className='bg-black border border-zinc-800 p-3 text-center'>
+                    <p className='text-xl font-heading font-black text-zinc-600'>
+                      {totalCurriculumItems - masteredCurriculumItems}
+                    </p>
+                    <p className='text-[8px] font-black uppercase tracking-widest text-zinc-600 mt-1'>
+                      Remaining
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className='bg-zinc-900/30 p-10 border border-zinc-800 rounded-3xl backdrop-blur-sm'>
               <h3 className='text-zinc-500 uppercase text-[10px] font-black tracking-[0.3em] mb-10 flex items-center justify-between'>
                 Security Archive{" "}
