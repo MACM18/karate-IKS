@@ -9,58 +9,128 @@ import { auth } from "@/auth";
 import { NewsCard } from "@/components/NewsCard";
 import Image from "next/image";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const session = await auth();
 
-  const latestPosts = await prisma.post.findMany({
-    where: { published: true },
-    orderBy: { createdAt: "desc" },
-    take: 3,
-  });
+  let latestPosts: any[] = [];
+  try {
+    latestPosts = await prisma.post.findMany({
+      where: { published: true },
+      orderBy: { createdAt: "desc" },
+      take: 3,
+    });
+  } catch (err: any) {
+    if (err?.code === "P2021") {
+      console.warn("Prisma P2021 during latest posts fetch; using empty list.");
+      latestPosts = [];
+    } else {
+      throw err;
+    }
+  }
 
-  const galleryHighlights = await prisma.galleryItem.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 4,
-  });
+  let galleryHighlights: any[] = [];
+  try {
+    galleryHighlights = await prisma.galleryItem.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 4,
+    });
+  } catch (err: any) {
+    if (err?.code === "P2021") {
+      console.warn(
+        "Prisma P2021 during galleryHighlights fetch; using empty list.",
+      );
+      galleryHighlights = [];
+    } else {
+      throw err;
+    }
+  }
 
-  const activePrograms = await prisma.program.findMany({
-    orderBy: { order: "asc" },
-    take: 5,
-  });
+  let activePrograms: any[] = [];
+  try {
+    activePrograms = await prisma.program.findMany({
+      orderBy: { order: "asc" },
+      take: 5,
+    });
+  } catch (err: any) {
+    if (err?.code === "P2021") {
+      console.warn(
+        "Prisma P2021 during activePrograms fetch; using empty list.",
+      );
+      activePrograms = [];
+    } else {
+      throw err;
+    }
+  }
 
-  const activeExamsFetch = session
-    ? await prisma.examTemplate.findMany({
-      where: {
-        isActive: true,
-        openDate: { lte: new Date() },
-        OR: [{ deadline: null }, { deadline: { gte: new Date() } }],
-      },
-      take: 2,
-    })
-    : [];
+  let activeExamsFetch: any[] = [];
+  if (session) {
+    try {
+      activeExamsFetch = await prisma.examTemplate.findMany({
+        where: {
+          isActive: true,
+          openDate: { lte: new Date() },
+          OR: [{ deadline: null }, { deadline: { gte: new Date() } }],
+        },
+        take: 2,
+      });
+    } catch (err: any) {
+      if (err?.code === "P2021") {
+        console.warn(
+          "Prisma P2021 during examTemplate fetch; using empty list.",
+        );
+        activeExamsFetch = [];
+      } else {
+        throw err;
+      }
+    }
+  }
 
   // Fetch Instructors
-  const senseis = await prisma.user.findMany({
-    where: { role: "SENSEI" },
-    include: {
-      studentProfile: {
-        include: {
-          currentRank: true,
+  let senseis: any[] = [];
+  try {
+    senseis = await prisma.user.findMany({
+      where: { role: "SENSEI" },
+      include: {
+        studentProfile: {
+          include: {
+            currentRank: true,
+          },
         },
       },
-    },
-    take: 3,
-  });
+      take: 3,
+    });
+  } catch (err: any) {
+    if (err?.code === "P2021") {
+      console.warn("Prisma P2021 during instructors fetch; using empty list.");
+      senseis = [];
+    } else {
+      throw err;
+    }
+  }
 
-  // Fetch Stats
-  const studentCount = await prisma.user.count({ where: { role: "STUDENT" } });
-  const blackBeltCount = await prisma.studentProfile.count({
-    where: {
-      currentRank: {
-        name: { contains: "Black", mode: "insensitive" },
+  let studentCount = 0;
+  let blackBeltCount = 0;
+  try {
+    studentCount = await prisma.user.count({ where: { role: "STUDENT" } });
+    blackBeltCount = await prisma.studentProfile.count({
+      where: {
+        currentRank: {
+          name: { contains: "Black", mode: "insensitive" },
+        },
       },
-    },
-  });
+    });
+  } catch (err: any) {
+    if (err?.code === "P2021") {
+      console.warn("Prisma P2021 during stats fetch; using placeholder stats.");
+      studentCount = 0;
+      blackBeltCount = 0;
+    } else {
+      throw err;
+    }
+  }
+
   // Estimated / Placeholder stats if DB is empty
   const displayStudentCount = studentCount > 0 ? `${studentCount}+` : "350+";
   const displayBlackBelts =
@@ -128,15 +198,18 @@ export default async function Home() {
       )}
 
       {/* Lineage & Tradition Section - Default Background */}
-      <section className="w-full bg-background text-foreground py-32">
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
+      <section className='w-full bg-background text-foreground py-32'>
+        <div className='max-w-7xl mx-auto px-4 md:px-8'>
           <LineageSection />
         </div>
       </section>
 
       {/* Programs Bento Grid - Muted Background */}
-      <section className="w-full bg-muted/30 text-foreground py-32 relative z-10" id="programs">
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
+      <section
+        className='w-full bg-muted/30 text-foreground py-32 relative z-10'
+        id='programs'
+      >
+        <div className='max-w-7xl mx-auto px-4 md:px-8'>
           <ProgramBento programs={activePrograms} />
         </div>
       </section>
@@ -150,8 +223,7 @@ export default async function Home() {
                 Dojo Feed
               </span>
               <h2 className='text-4xl md:text-6xl font-heading font-black uppercase tracking-tight text-foreground leading-[0.9]'>
-                Latest{" "}
-                <span className='text-primary italic'>Intelligence</span>
+                Latest <span className='text-primary italic'>Intelligence</span>
               </h2>
             </div>
             <Link
@@ -197,8 +269,9 @@ export default async function Home() {
             {galleryHighlights.map((item, i) => (
               <div
                 key={item.id}
-                className={`relative aspect-square overflow-hidden group border border-border ${i % 2 === 0 ? "md:translate-y-8" : ""
-                  }`}
+                className={`relative aspect-square overflow-hidden group border border-border ${
+                  i % 2 === 0 ? "md:translate-y-8" : ""
+                }`}
               >
                 <Image
                   src={item.url}
@@ -223,8 +296,8 @@ export default async function Home() {
       </section>
 
       {/* Instructor Spotlight - Default Background */}
-      <section className="w-full bg-background text-foreground py-32">
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
+      <section className='w-full bg-background text-foreground py-32'>
+        <div className='max-w-7xl mx-auto px-4 md:px-8'>
           <InstructorSpotlight instructors={instructors} />
         </div>
       </section>
@@ -279,14 +352,12 @@ export default async function Home() {
             <Shield className='w-16 h-16 text-primary mx-auto mb-8 animate-bounce' />
             <h2 className='text-4xl md:text-6xl font-heading font-black uppercase text-foreground mb-6 leading-tight'>
               Your First Step Towards <br />
-              <span className='text-primary italic'>
-                Unstoppable Strength
-              </span>
+              <span className='text-primary italic'>Unstoppable Strength</span>
             </h2>
             <p className='text-xl text-muted-foreground mb-12 leading-relaxed'>
               Join our community of dedicated practitioners. Whether you're a
-              beginner or an advanced martial artist, there's a place for you
-              in our Dojo.
+              beginner or an advanced martial artist, there's a place for you in
+              our Dojo.
             </p>
 
             <div className='flex flex-col sm:flex-row gap-6 justify-center'>

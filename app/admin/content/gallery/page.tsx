@@ -13,9 +13,21 @@ export default async function GalleryManagementPage() {
     redirect("/login");
   }
 
-  const items = await prisma.galleryItem.findMany({
-    orderBy: { createdAt: "desc" },
-  });
+  let items: any[] = [];
+  try {
+    items = await prisma.galleryItem.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (err: any) {
+    if (err?.code === "P2021") {
+      console.warn(
+        "Prisma P2021 during admin gallery fetch; using empty items.",
+      );
+      items = [];
+    } else {
+      throw err;
+    }
+  }
 
   return (
     <div className='p-8 space-y-12 max-w-full mx-auto min-h-screen relative pb-32'>
