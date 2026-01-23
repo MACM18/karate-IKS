@@ -10,6 +10,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import Image from "next/image";
+import type { User } from "@prisma/client";
 
 // Re-enable client features where needed using a wrapper or keeping small client parts
 // For now, I'll convert the main page to a Server Component to fetch data,
@@ -18,7 +19,13 @@ import Image from "next/image";
 // but Next.js 13+ allows async server components for data fetching.
 
 export default async function AboutPage() {
-  const senseis = await prisma.user.findMany({
+  const senseis: (User & {
+    studentProfile?: {
+      currentRank?: { name?: string } | null;
+      bio?: string | null;
+      image?: string | null;
+    } | null;
+  })[] = await prisma.user.findMany({
     where: { role: "SENSEI" },
     include: {
       studentProfile: {
