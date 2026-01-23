@@ -11,23 +11,35 @@ import {
   Layers
 } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminCurriculumPage() {
   // Fetch all ranks with their curriculum counts
-  const ranks = await prisma.rank.findMany({
-    orderBy: { order: "asc" },
-    include: {
-      curriculumItems: {
-        select: {
-          id: true,
-          category: true,
+  let ranks: any[] = [];
+  try {
+    ranks = await prisma.rank.findMany({
+      orderBy: { order: "asc" },
+      include: {
+        curriculumItems: {
+          select: {
+            id: true,
+            category: true,
+          },
         },
       },
-    },
-  });
+    });
+  } catch (err: any) {
+    if (err?.code === 'P2021') {
+      console.warn('Prisma P2021 during rank fetch; using empty ranks.');
+      ranks = [];
+    } else {
+      throw err;
+    }
+  }
 
   // Calculate category counts for each rank
   const ranksWithStats = ranks.map((rank) => {
-    const categoryCounts = rank.curriculumItems.reduce((acc, item) => {
+    const categoryCounts = rank.curriculumItems.reduce((acc: Record<string, number>, item: any) => {
       acc[item.category] = (acc[item.category] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);

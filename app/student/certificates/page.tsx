@@ -4,24 +4,53 @@ import { redirect } from "next/navigation";
 import { CertificateCard } from "@/components/student/CertificateCard";
 import { Award, Shield } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function CertificatesPage() {
   const session = await auth();
   if (!session || !session.user) redirect("/login");
 
-  const profile = (await prisma.studentProfile.findUnique({
-    where: { userId: session.user.id },
-    include: {
-      currentRank: true,
-      promotions: {
-        include: { rank: true },
-        orderBy: { promotedAt: "desc" },
+  let profile: any = null;
+  try {
+    profile = (await prisma.studentProfile.findUnique({
+      where: { userId: session.user.id },
+      include: {
+        currentRank: true,
+        promotions: {
+          include: { rank: true },
+          orderBy: { promotedAt: "desc" },
+        },
       },
-    },
-  })) as any;
+    })) as any;
+  } catch (err: any) {
+    if (err?.code === 'P2021') {
+      console.warn('Prisma P2021 during profile fetch; showing placeholder.');
+      return (
+        <div className='min-h-screen bg-black text-white p-8 flex items-center justify-center'>
+          <div className='text-center'>
+            <h1 className='text-2xl font-heading mb-2'>Service Temporarily Unavailable</h1>
+            <p className='text-zinc-500'>The data store is not accessible at the moment. Please try again later.</p>
+          </div>
+        </div>
+      );
+    } else {
+      throw err;
+    }
+  }
 
   if (!profile) return <div>Profile not found</div>;
 
-  const allRanks = await prisma.rank.findMany({ orderBy: { order: "asc" } });
+  let allRanks: any[] = [];
+  try {
+    allRanks = await prisma.rank.findMany({ orderBy: { order: "asc" } });
+  } catch (err: any) {
+    if (err?.code === 'P2021') {
+      console.warn('Prisma P2021 during rank fetch; using empty ranks.');
+      allRanks = [];
+    } else {
+      throw err;
+    }
+  }
   const currentOrder = profile.currentRank?.order ?? -1;
   const nextRank = allRanks.find((r) => r.order === currentOrder + 1);
 

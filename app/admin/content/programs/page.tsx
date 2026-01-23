@@ -2,10 +2,22 @@ import { prisma } from "@/app/lib/prisma";
 import { ProgramForm } from "@/components/admin/ProgramForm";
 import { FolderKanban } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function ProgramsAdminPage() {
-  const programs = await prisma.program.findMany({
-    orderBy: { order: "asc" },
-  });
+  let programs: any[] = [];
+  try {
+    programs = await prisma.program.findMany({
+      orderBy: { order: "asc" },
+    });
+  } catch (err: any) {
+    if (err?.code === 'P2021') {
+      console.warn('Prisma P2021 during admin programs fetch; using empty programs.');
+      programs = [];
+    } else {
+      throw err;
+    }
+  }
 
   return (
     <div className='p-8 space-y-8'>
