@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/app/lib/prisma";
 import { StudentSchema } from "@/app/lib/schemas";
-import { encrypt } from "@/app/lib/encryption";
+import { encrypt, decrypt } from "@/app/lib/encryption";
 import { NextResponse } from "next/server";
 
 // GET: List all students (Admin Only)
@@ -21,9 +21,18 @@ export async function GET(req: Request) {
                 currentRank: true,
             },
             orderBy: { createdAt: 'desc' }
-        });
-        return NextResponse.json(students);
+        }) as any[];
+
+        // Decrypt PII for Admin view
+        const decryptedStudents = students.map(student => ({
+            ...student,
+            phone: student.phone ? decrypt(student.phone) : null,
+            emergencyContact: student.emergencyContact ? decrypt(student.emergencyContact) : null,
+        }));
+
+        return NextResponse.json(decryptedStudents);
     } catch (error) {
+        console.error("Error fetching students:", error);
         return NextResponse.json({ error: "Failed to fetch students" }, { status: 500 });
     }
 }
@@ -43,32 +52,38 @@ export async function POST(req: Request) {
         // Transaction to create User and Profile
         const result = await prisma.$transaction(async (tx) => {
             // 1. Create User
-            // Note: Password handling should be robust (hashing). Here we set a default.
             const user = await tx.user.create({
                 data: {
                     name: validatedData.name,
                     email: validatedData.email,
                     role: 'STUDENT',
-                    // passwordHash: await bcrypt.hash('welcome123', 10), // In real app
                 }
             });
 
-            // 2. Get Rank ID (assuming ranks exist, otherwise find/create)
-            // For simplicity, we search for the rank by name
-            let rank = await tx.rank.findFirst({ where: { name: validatedData.rank } });
-            if (!rank) {
-                // Fallback or error. For this implementation plan, allow null or handle grace.
-                // We can optionally seed ranks if they don't exist.
-            }
+            // 2. Generate Admission Number: KS-[Year]-[Count+1]
+            const year = new Date().getFullYear();
+            const count = await tx.studentProfile.count({
+                where: {
+                    admissionNumber: {
+                        startsWith: `KS-${year}`
+                    }
+                }
+            });
+            const admissionNumber = `KS-${year}-${(count + 1).toString().padStart(3, '0')}`;
 
-            // 3. Create Profile
+            // 3. Get Rank ID
+            let rank = await tx.rank.findFirst({ where: { name: validatedData.rank } });
+
+            // 4. Create Profile
             const profile = await tx.studentProfile.create({
                 data: {
                     userId: user.id,
-                    phone: validatedData.phone,
-                    emergencyContact: encrypt(validatedData.emergencyContact),
+                    admissionNumber,
+                    phone: validatedData.phone ? encrypt(validatedData.phone) : null,
+                    emergencyContact: validatedData.emergencyContact ? encrypt(validatedData.emergencyContact) : null,
                     dateOfBirth: validatedData.dateOfBirth ? new Date(validatedData.dateOfBirth) : null,
                     currentRankId: rank?.id,
+                    classId: (validatedData as any).classId || null,
                 }
             });
 

@@ -1,79 +1,68 @@
-import { AttendanceCalendar } from "@/components/student/AttendanceCalendar";
-import { Clock, TrendingUp, Calendar } from "lucide-react";
+import { prisma } from "@/app/lib/prisma";
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+import { AttendanceClient } from "./AttendanceClient";
 
-export default function AttendancePage() {
+export default async function AttendancePage() {
+    const session = await auth();
+    if (!session || !session.user) redirect("/login");
+
+    const profile = await prisma.studentProfile.findUnique({
+        where: { userId: session.user.id },
+        include: {
+            attendance: {
+                orderBy: { date: 'desc' }
+            }
+        }
+    });
+
+    if (!profile) return <div>Profile not found</div>;
+
+    // Calculate Stats
+    const totalClasses = profile.attendance.length;
+    const totalHours = totalClasses * 1.5; // Assuming 1.5 hours per class
+
+    // Simple streak calculation: count consecutive days backwards from today
+    let streak = 0;
+    const attendanceDates = new Set(profile.attendance.map(a => new Date(a.date).toDateString()));
+    const today = new Date();
+
+    // For a real dojo, streak might mean "no more than 7 days gap" 
+    // but let's do "consecutive training days" for impact
+    let checkDate = new Date();
+    while (attendanceDates.has(checkDate.toDateString())) {
+        streak++;
+        checkDate.setDate(checkDate.getDate() - 1);
+    }
+
+    // If not trained today, check from yesterday
+    if (streak === 0) {
+        checkDate = new Date();
+        checkDate.setDate(checkDate.getDate() - 1);
+        while (attendanceDates.has(checkDate.toDateString())) {
+            streak++;
+            checkDate.setDate(checkDate.getDate() - 1);
+        }
+    }
+
+    const lastClass = profile.attendance[0];
+
     return (
-        <div className="min-h-screen bg-black text-white p-8">
-            <header className="mb-12">
-                <h1 className="text-4xl font-heading uppercase tracking-widest text-white mb-4">
-                    Training Log
-                </h1>
-                <p className="text-zinc-500 max-w-2xl">
-                    Consistency is the key to mastery. Track your progress here.
-                </p>
-            </header>
-
-            <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 pb-20">
-
-                {/* Stats Column */}
-                <div className="space-y-6">
-                    <div className="bg-zinc-950 border border-zinc-900 p-6 rounded-lg">
-                        <div className="flex items-center gap-3 mb-2 text-zinc-500">
-                            <TrendingUp size={20} />
-                            <span className="text-xs uppercase tracking-widest font-bold">Current Streak</span>
-                        </div>
-                        <div className="text-4xl font-heading text-white">
-                            12 <span className="text-lg text-zinc-600 ml-1">Classes</span>
-                        </div>
-                    </div>
-
-                    <div className="bg-zinc-950 border border-zinc-900 p-6 rounded-lg">
-                        <div className="flex items-center gap-3 mb-2 text-zinc-500">
-                            <Clock size={20} />
-                            <span className="text-xs uppercase tracking-widest font-bold">Total Training Hours</span>
-                        </div>
-                        <div className="text-4xl font-heading text-white">
-                            145 <span className="text-lg text-zinc-600 ml-1">Hrs</span>
-                        </div>
-                    </div>
-
-                    <div className="bg-zinc-950 border border-zinc-900 p-6 rounded-lg">
-                        <div className="flex items-center gap-3 mb-2 text-zinc-500">
-                            <Calendar size={20} />
-                            <span className="text-xs uppercase tracking-widest font-bold">Last Class</span>
-                        </div>
-                        <div className="text-xl font-heading text-white">
-                            Yesterday
-                        </div>
-                        <p className="text-sm text-zinc-600 mt-1">Foundations (6:00 PM)</p>
-                    </div>
-                </div>
-
-                {/* Calendar Column */}
-                <div className="lg:col-span-2">
-                    <AttendanceCalendar />
-
-                    <div className="mt-8 grid grid-cols-2 gap-4">
-                        {/* Previous Months Placeholders - blurred/dimmed */}
-                        <div className="bg-zinc-950/50 border border-zinc-900/50 rounded-lg p-6 opacity-50 grayscale">
-                            <h4 className="text-zinc-600 text-sm font-bold uppercase tracking-widest mb-4">September</h4>
-                            <div className="grid grid-cols-7 gap-1">
-                                {Array.from({ length: 30 }).map((_, i) => (
-                                    <div key={i} className={`aspect-square rounded ${[1, 4, 7].includes(i) ? 'bg-zinc-800' : 'bg-zinc-950'}`}></div>
-                                ))}
-                            </div>
-                        </div>
-                        <div className="bg-zinc-950/50 border border-zinc-900/50 rounded-lg p-6 opacity-50 grayscale">
-                            <h4 className="text-zinc-600 text-sm font-bold uppercase tracking-widest mb-4">August</h4>
-                            <div className="grid grid-cols-7 gap-1">
-                                {Array.from({ length: 31 }).map((_, i) => (
-                                    <div key={i} className={`aspect-square rounded ${[2, 5, 10].includes(i) ? 'bg-zinc-800' : 'bg-zinc-950'}`}></div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <AttendanceClient
+            attendance={profile.attendance.map(a => ({
+                id: a.id,
+                date: a.date.toISOString(),
+                type: a.classType
+            }))}
+            stats={{
+                totalClasses,
+                totalHours,
+                streak,
+                lastClass: lastClass ? {
+                    date: lastClass.date.toISOString(),
+                    type: lastClass.classType
+                } : null
+            }}
+        />
     );
 }
