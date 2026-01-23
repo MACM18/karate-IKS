@@ -43,6 +43,8 @@ type StudentProfileWithData = Prisma.StudentProfileGetPayload<{
   };
 }>;
 
+export const dynamic = "force-dynamic";
+
 export default async function StudentDashboard() {
   const session = await auth();
   if (!session || !session.user) {
@@ -50,28 +52,45 @@ export default async function StudentDashboard() {
   }
 
   // Fetch Profile with related data
-  const profileData = await prisma.studentProfile.findUnique({
-    where: { userId: session.user.id },
-    include: {
-      user: true,
-      currentRank: {
-        include: {
-          curriculumItems: {
-            orderBy: { order: "asc" },
+  let profileData: any = null;
+  try {
+    profileData = await prisma.studentProfile.findUnique({
+      where: { userId: session.user.id },
+      include: {
+        user: true,
+        currentRank: {
+          include: {
+            curriculumItems: {
+              orderBy: { order: "asc" },
+            },
           },
         },
+        attendance: {
+          orderBy: { date: "desc" },
+          take: 50,
+        },
+        achievements: true,
+        applications: {
+          include: { template: true },
+        },
+        curriculumProgress: true,
       },
-      attendance: {
-        orderBy: { date: "desc" },
-        take: 50,
-      },
-      achievements: true,
-      applications: {
-        include: { template: true },
-      },
-      curriculumProgress: true,
-    },
-  });
+    });
+  } catch (err: any) {
+    if (err?.code === 'P2021') {
+      console.warn('Prisma P2021 during profile fetch; showing temporary unavailability.');
+      return (
+        <div className='min-h-screen bg-black text-white flex items-center justify-center p-8'>
+          <div className='text-center'>
+            <h1 className='text-2xl font-heading mb-2'>Service Temporarily Unavailable</h1>
+            <p className='text-zinc-500'>The data store is not accessible at the moment. Please try again later.</p>
+          </div>
+        </div>
+      );
+    } else {
+      throw err;
+    }
+  }
 
   if (!profileData) {
     return (
@@ -90,17 +109,37 @@ export default async function StudentDashboard() {
   const profile = profileData as StudentProfileWithData;
 
   // Fetch All Ranks to find progression
-  const allRanks = await prisma.rank.findMany({ orderBy: { order: "asc" } });
+  let allRanks: any[] = [];
+  try {
+    allRanks = await prisma.rank.findMany({ orderBy: { order: "asc" } });
+  } catch (err: any) {
+    if (err?.code === 'P2021') {
+      console.warn('Prisma P2021 during rank fetch; using empty ranks.');
+      allRanks = [];
+    } else {
+      throw err;
+    }
+  }
   const currentRankOrder = profile.currentRank?.order || 0;
   const nextRank = allRanks.find((r) => r.order > currentRankOrder);
 
   // Fetch Active Exam Templates (Highlight those student hasn't applied for)
-  const activeExamsFetch = await prisma.examTemplate.findMany({
-    where: {
-      isActive: true,
-      deadline: { gte: new Date() },
-    },
-  });
+  let activeExamsFetch: any[] = [];
+  try {
+    activeExamsFetch = await prisma.examTemplate.findMany({
+      where: {
+        isActive: true,
+        deadline: { gte: new Date() },
+      },
+    });
+  } catch (err: any) {
+    if (err?.code === 'P2021') {
+      console.warn('Prisma P2021 during examTemplate fetch; using empty exams list.');
+      activeExamsFetch = [];
+    } else {
+      throw err;
+    }
+  }
 
   const appliedTemplateIds = new Set(
     profile.applications.map((a) => a.templateId)
@@ -110,18 +149,37 @@ export default async function StudentDashboard() {
   );
 
   // Fetch Dojo Settings for Sensei Contact
-  let dojoSettings = await prisma.dojoSettings.findFirst();
-  if (!dojoSettings) {
-    dojoSettings = {
-      id: "default",
-      phoneNumbers: [],
-      whatsappNumbers: [],
-      senseiName: "Sensei",
-      senseiEmail: null,
-      dojoAddress: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+  let dojoSettings: any = null;
+  try {
+    dojoSettings = await prisma.dojoSettings.findFirst();
+    if (!dojoSettings) {
+      dojoSettings = {
+        id: "default",
+        phoneNumbers: [],
+        whatsappNumbers: [],
+        senseiName: "Sensei",
+        senseiEmail: null,
+        dojoAddress: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+    }
+  } catch (err: any) {
+    if (err?.code === 'P2021') {
+      console.warn('Prisma P2021 during dojoSettings fetch; using defaults.');
+      dojoSettings = {
+        id: "default",
+        phoneNumbers: [],
+        whatsappNumbers: [],
+        senseiName: "Sensei",
+        senseiEmail: null,
+        dojoAddress: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+    } else {
+      throw err;
+    }
   }
 
   // Attendance stats
