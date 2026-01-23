@@ -8,10 +8,16 @@ export async function GET() {
       orderBy: { name: "asc" },
     });
     return NextResponse.json(schedules);
-  } catch (error) {
+  } catch (error: any) {
+    console.error("Failed to fetch schedules:", error);
+    if (error?.code === "P2021") {
+      console.warn("ClassSchedule table missing; returning empty list.");
+      return NextResponse.json([]);
+    }
+
     return NextResponse.json(
       { error: "Failed to fetch schedules" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -41,7 +47,7 @@ export async function POST(req: Request) {
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to create schedule" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -72,7 +78,7 @@ export async function PUT(req: Request) {
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to update schedule" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -93,7 +99,7 @@ export async function DELETE(req: Request) {
     if (!id) {
       return NextResponse.json(
         { error: "Schedule ID required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -102,7 +108,7 @@ export async function DELETE(req: Request) {
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to delete schedule" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
