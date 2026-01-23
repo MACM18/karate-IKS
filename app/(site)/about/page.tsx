@@ -12,6 +12,8 @@ import {
 import Image from "next/image";
 import type { User } from "@prisma/client";
 
+export const dynamic = "force-dynamic";
+
 // Re-enable client features where needed using a wrapper or keeping small client parts
 // For now, I'll convert the main page to a Server Component to fetch data,
 // and move interactive parts to small client components if necessary.
@@ -19,22 +21,36 @@ import type { User } from "@prisma/client";
 // but Next.js 13+ allows async server components for data fetching.
 
 export default async function AboutPage() {
-  const senseis: (User & {
+  let senseis: (User & {
     studentProfile?: {
       currentRank?: { name?: string } | null;
       bio?: string | null;
       image?: string | null;
     } | null;
-  })[] = await prisma.user.findMany({
-    where: { role: "SENSEI" },
-    include: {
-      studentProfile: {
-        include: {
-          currentRank: true,
+  })[] = [];
+
+  try {
+    senseis = await prisma.user.findMany({
+      where: { role: "SENSEI" },
+      include: {
+        studentProfile: {
+          include: {
+            currentRank: true,
+          },
         },
       },
-    },
-  });
+    });
+  } catch (err: unknown) {
+    // If Prisma complains about missing tables (P2021), render page with empty list
+    if ((err as any)?.code === "P2021") {
+      console.warn(
+        "Prisma P2021 (table missing) while building /about — rendering without instructors",
+      );
+      senseis = [];
+    } else {
+      throw err;
+    }
+  }
 
   const dojoKun = [
     {
