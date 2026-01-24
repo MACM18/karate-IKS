@@ -5,6 +5,8 @@ import { ExamApplicationForm } from "@/components/student/ExamApplicationForm";
 import { Clock, Shield, CheckCircle2, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 export default async function StudentExamsPage({
   searchParams,
 }: {
@@ -19,14 +21,28 @@ export default async function StudentExamsPage({
 
   if (!studentProfile) redirect("/join");
 
+  if (!studentProfile) redirect("/join");
+
   // Await searchParams before accessing its properties
   const params = await searchParams;
 
   // If an ID is provided, show the application form
   if (params.id) {
-    const templateData = await prisma.examTemplate.findUnique({
-      where: { id: params.id },
-    });
+    let templateData: any = null;
+    try {
+      templateData = await prisma.examTemplate.findUnique({
+        where: { id: params.id },
+      });
+    } catch (err: any) {
+      if (err?.code === "P2021") {
+        console.warn(
+          "Prisma P2021 during single exam template fetch; redirecting back.",
+        );
+        redirect("/student/exams");
+      } else {
+        throw err;
+      }
+    }
 
     const template = templateData as any;
 
@@ -46,16 +62,27 @@ export default async function StudentExamsPage({
   }
 
   // List available exams and my applications
-  const templatesFetch = await prisma.examTemplate.findMany({
-    where: {
-      isActive: true,
-      openDate: { lte: new Date() },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+  let templatesFetch: any[] = [];
+  try {
+    templatesFetch = await prisma.examTemplate.findMany({
+      where: {
+        isActive: true,
+        openDate: { lte: new Date() },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (err: any) {
+    if (err?.code === "P2021") {
+      console.warn(
+        "Prisma P2021 during exam templates fetch; using empty list.",
+      );
+      templatesFetch = [];
+    } else {
+      throw err;
+    }
+  }
 
   const templates = templatesFetch as any[];
-
   const myApplicationsFetch = await prisma.examApplication.findMany({
     where: { studentId: studentProfile.id },
     include: { template: true },
@@ -173,8 +200,8 @@ export default async function StudentExamsPage({
                       app.status === "APPROVED"
                         ? "bg-green-900/30 text-green-400"
                         : app.status === "REJECTED"
-                        ? "bg-red-900/30 text-red-400"
-                        : "bg-zinc-800 text-zinc-400"
+                          ? "bg-red-900/30 text-red-400"
+                          : "bg-zinc-800 text-zinc-400"
                     }`}
                   >
                     {app.status}

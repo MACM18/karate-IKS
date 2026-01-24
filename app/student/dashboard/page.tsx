@@ -77,13 +77,20 @@ export default async function StudentDashboard() {
       },
     });
   } catch (err: any) {
-    if (err?.code === 'P2021') {
-      console.warn('Prisma P2021 during profile fetch; showing temporary unavailability.');
+    if (err?.code === "P2021") {
+      console.warn(
+        "Prisma P2021 during profile fetch; showing temporary unavailability.",
+      );
       return (
         <div className='min-h-screen bg-black text-white flex items-center justify-center p-8'>
           <div className='text-center'>
-            <h1 className='text-2xl font-heading mb-2'>Service Temporarily Unavailable</h1>
-            <p className='text-zinc-500'>The data store is not accessible at the moment. Please try again later.</p>
+            <h1 className='text-2xl font-heading mb-2'>
+              Service Temporarily Unavailable
+            </h1>
+            <p className='text-zinc-500'>
+              The data store is not accessible at the moment. Please try again
+              later.
+            </p>
           </div>
         </div>
       );
@@ -113,8 +120,8 @@ export default async function StudentDashboard() {
   try {
     allRanks = await prisma.rank.findMany({ orderBy: { order: "asc" } });
   } catch (err: any) {
-    if (err?.code === 'P2021') {
-      console.warn('Prisma P2021 during rank fetch; using empty ranks.');
+    if (err?.code === "P2021") {
+      console.warn("Prisma P2021 during rank fetch; using empty ranks.");
       allRanks = [];
     } else {
       throw err;
@@ -133,8 +140,10 @@ export default async function StudentDashboard() {
       },
     });
   } catch (err: any) {
-    if (err?.code === 'P2021') {
-      console.warn('Prisma P2021 during examTemplate fetch; using empty exams list.');
+    if (err?.code === "P2021") {
+      console.warn(
+        "Prisma P2021 during examTemplate fetch; using empty exams list.",
+      );
       activeExamsFetch = [];
     } else {
       throw err;
@@ -142,10 +151,10 @@ export default async function StudentDashboard() {
   }
 
   const appliedTemplateIds = new Set(
-    profile.applications.map((a) => a.templateId)
+    profile.applications.map((a) => a.templateId),
   );
   const availableExams = activeExamsFetch.filter(
-    (e) => !appliedTemplateIds.has(e.id)
+    (e) => !appliedTemplateIds.has(e.id),
   );
 
   // Fetch Dojo Settings for Sensei Contact
@@ -165,8 +174,8 @@ export default async function StudentDashboard() {
       };
     }
   } catch (err: any) {
-    if (err?.code === 'P2021') {
-      console.warn('Prisma P2021 during dojoSettings fetch; using defaults.');
+    if (err?.code === "P2021") {
+      console.warn("Prisma P2021 during dojoSettings fetch; using defaults.");
       dojoSettings = {
         id: "default",
         phoneNumbers: [],
@@ -200,7 +209,7 @@ export default async function StudentDashboard() {
 
   // Calculate Streak
   const sortedUniqueDates = Array.from(
-    new Set(profile.attendance.map((a) => new Date(a.date).toDateString()))
+    new Set(profile.attendance.map((a) => new Date(a.date).toDateString())),
   )
     .map((d) => new Date(d))
     .sort((a, b) => b.getTime() - a.getTime());
@@ -211,7 +220,7 @@ export default async function StudentDashboard() {
     const todayStart = new Date(today.toDateString());
     // Difference in days (0 if today, 1 if yesterday)
     const diffDays = Math.floor(
-      (todayStart.getTime() - latest.getTime()) / (1000 * 60 * 60 * 24)
+      (todayStart.getTime() - latest.getTime()) / (1000 * 60 * 60 * 24),
     );
 
     // Streak is alive if latest attendance was Today (0) or Yesterday (1)
@@ -221,7 +230,7 @@ export default async function StudentDashboard() {
         const current = sortedUniqueDates[i];
         const previous = sortedUniqueDates[i + 1];
         const gap = Math.round(
-          (current.getTime() - previous.getTime()) / (1000 * 60 * 60 * 24)
+          (current.getTime() - previous.getTime()) / (1000 * 60 * 60 * 24),
         );
         if (gap === 1) {
           streak++;
@@ -254,7 +263,7 @@ export default async function StudentDashboard() {
     profile.currentRank?.curriculumItems?.map((item) => ({
       ...item,
       progress: profile.curriculumProgress?.find(
-        (p) => p.curriculumId === item.id
+        (p) => p.curriculumId === item.id,
       ),
     })) || [];
 
@@ -263,11 +272,14 @@ export default async function StudentDashboard() {
   // this would be based on individual student exam announcements
   const examAvailability = curriculumItems
     .filter((item) => item.category === "EXAM")
-    .reduce((acc, item) => {
-      // Check if there's an active exam for this student's rank
-      acc[item.id] = availableExams.length > 0;
-      return acc;
-    }, {} as Record<string, boolean>);
+    .reduce(
+      (acc, item) => {
+        // Check if there's an active exam for this student's rank
+        acc[item.id] = availableExams.length > 0;
+        return acc;
+      },
+      {} as Record<string, boolean>,
+    );
 
   // Data Masking for PII
   const maskedPhone = profile.phone
@@ -501,7 +513,7 @@ export default async function StudentDashboard() {
                   nextBelt={nextRank?.name || "Dan Candidate"}
                   progress={Math.min(
                     Math.round((totalClasses / 24) * 100),
-                    100
+                    100,
                   )}
                   color={themeColor}
                 />
