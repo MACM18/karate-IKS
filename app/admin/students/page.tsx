@@ -3,19 +3,33 @@ import { Search, Filter } from "lucide-react";
 import { prisma } from "@/app/lib/prisma";
 import { CreateStudentButton } from "@/components/admin/CreateStudentButton";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminStudentsPage() {
-  const rawStudents = await prisma.studentProfile.findMany({
-    include: {
-      user: true,
-      currentRank: true,
-      classSchedule: true,
-      attendance: {
-        orderBy: { date: "desc" },
-        take: 1,
+  let rawStudents: any[] = [];
+  try {
+    rawStudents = await prisma.studentProfile.findMany({
+      include: {
+        user: true,
+        currentRank: true,
+        classSchedule: true,
+        attendance: {
+          orderBy: { date: "desc" },
+          take: 1,
+        },
       },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (err: any) {
+    if (err?.code === "P2021") {
+      console.warn(
+        "Prisma P2021 during admin students fetch; using empty list.",
+      );
+      rawStudents = [];
+    } else {
+      throw err;
+    }
+  }
 
   const students: any[] = rawStudents.map((profile) => ({
     id: profile.id,
