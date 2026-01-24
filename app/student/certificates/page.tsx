@@ -23,13 +23,18 @@ export default async function CertificatesPage() {
       },
     })) as any;
   } catch (err: any) {
-    if (err?.code === 'P2021') {
-      console.warn('Prisma P2021 during profile fetch; showing placeholder.');
+    if (err?.code === "P2021") {
+      console.warn("Prisma P2021 during profile fetch; showing placeholder.");
       return (
         <div className='min-h-screen bg-black text-white p-8 flex items-center justify-center'>
           <div className='text-center'>
-            <h1 className='text-2xl font-heading mb-2'>Service Temporarily Unavailable</h1>
-            <p className='text-zinc-500'>The data store is not accessible at the moment. Please try again later.</p>
+            <h1 className='text-2xl font-heading mb-2'>
+              Service Temporarily Unavailable
+            </h1>
+            <p className='text-zinc-500'>
+              The data store is not accessible at the moment. Please try again
+              later.
+            </p>
           </div>
         </div>
       );
@@ -44,8 +49,8 @@ export default async function CertificatesPage() {
   try {
     allRanks = await prisma.rank.findMany({ orderBy: { order: "asc" } });
   } catch (err: any) {
-    if (err?.code === 'P2021') {
-      console.warn('Prisma P2021 during rank fetch; using empty ranks.');
+    if (err?.code === "P2021") {
+      console.warn("Prisma P2021 during rank fetch; using empty ranks.");
       allRanks = [];
     } else {
       throw err;

@@ -11,8 +11,10 @@ export default async function ProgramsAdminPage() {
       orderBy: { order: "asc" },
     });
   } catch (err: any) {
-    if (err?.code === 'P2021') {
-      console.warn('Prisma P2021 during admin programs fetch; using empty programs.');
+    if (err?.code === "P2021") {
+      console.warn(
+        "Prisma P2021 during admin programs fetch; using empty programs.",
+      );
       programs = [];
     } else {
       throw err;
