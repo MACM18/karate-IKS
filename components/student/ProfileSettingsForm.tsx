@@ -30,7 +30,7 @@ export function ProfileSettingsForm({ initialData }: ProfileSettingsFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(
-    initialData.image
+    initialData.image,
   );
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
@@ -102,6 +102,13 @@ export function ProfileSettingsForm({ initialData }: ProfileSettingsFormProps) {
     }
   };
 
+  const isSafeImageSrc = (src?: string | null) => {
+    if (!src) return false;
+    const s = src.toLowerCase().trim();
+    if (s.startsWith("javascript:")) return false;
+    return /^(blob:|data:image\/|https?:\/\/|\/)/.test(s);
+  };
+
   return (
     <form action={handleSubmit} className='space-y-12 relative'>
       {/* Feedback Toast */}
@@ -141,12 +148,18 @@ export function ProfileSettingsForm({ initialData }: ProfileSettingsFormProps) {
         <div className='flex flex-col md:flex-row items-center gap-8'>
           <div className='relative group/image'>
             <div className='w-32 h-32 overflow-hidden border-4 border-zinc-900 shadow-xl bg-zinc-800 flex items-center justify-center relative'>
-              {previewImage ? (
-                <img
+              {previewImage && isSafeImageSrc(previewImage) ? (
+                <Image
                   src={previewImage}
                   alt='Profile'
-                  className='w-full h-full object-cover'
+                  unoptimized
+                  fill
+                  className='object-cover'
+                  sizes='128px'
                 />
+              ) : previewImage ? (
+                // If preview exists but isn't a safe URL, fall back to icon
+                <User size={48} className='text-zinc-600' />
               ) : (
                 <User size={48} className='text-zinc-600' />
               )}
