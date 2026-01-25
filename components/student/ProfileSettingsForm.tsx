@@ -105,7 +105,7 @@ export function ProfileSettingsForm({ initialData }: ProfileSettingsFormProps) {
   const isSafeImageSrc = (src?: string | null) => {
     if (!src) return false;
     const s = src.toLowerCase().trim();
-    if (s.startsWith("javascript:")) return false;
+    if (s.startsWith("javascript:") || s.startsWith("data:") || s.startsWith("vbscript:")) return false;
     return /^(blob:|data:image\/|https?:\/\/|\/)/.test(s);
   };
 
